@@ -23,7 +23,9 @@ def test_markup_accessibility_basics():
     assert 'role="search"' in html and 'role="dialog"' in html and 'aria-modal="true"' in html
     assert 'aria-live="polite"' in html
     # every form control has a <label for=...>
-    for control_id in re.findall(r'<(?:input|select)[^>]*id="([^"]+)"', html):
+    control_ids = re.findall(r'<(?:input|select)[^>]*\bid="([^"]+)"', html)
+    assert {"search-input", "filter-type", "filter-from", "filter-to"} <= set(control_ids)
+    for control_id in control_ids:
         assert f'for="{control_id}"' in html, control_id
 
 

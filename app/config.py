@@ -32,7 +32,7 @@ class Settings:
     var_dir: Path = field(default_factory=lambda: Path(os.getenv("EHR_VAR_DIR", PROJECT_ROOT / "var")))
     # "auto" -> Claude if a key is configured, otherwise the offline rule-based summarizer.
     summarizer: str = field(default_factory=lambda: os.getenv("EHR_SUMMARIZER", "auto"))
-    claude_model: str = field(default_factory=lambda: os.getenv("CLAUDE_MODEL", "claude-opus-5-5"))
+    claude_model: str = field(default_factory=lambda: os.getenv("CLAUDE_MODEL", "claude-sonnet-5-5"))
     embedding_model: str = field(
         default_factory=lambda: os.getenv("EHR_EMBEDDING_MODEL", "sentence-transformers/all-MiniLM-L6-v2")
     )

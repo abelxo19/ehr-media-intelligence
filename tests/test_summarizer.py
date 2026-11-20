@@ -68,7 +68,7 @@ class FakeSummarizer:
 def test_render_bundle_includes_ids_text_and_flags(bundles):
     text, ids = render_bundle(bundles["pt-0045678"])
     assert "PATIENT: Robert Williams" in text and "possible_duplicate_mrn" in text
-    assert "[LAB-ACC-5301]" in text and "NT-proBNP: 6800 pg/mL (ref <450) ** HIGH **" in text
+    assert "[LAB-ACC-5301]" in text and "NT-proBNP: 6800 pg/mL (ref <450), high" in text and "**" not in text
     assert "Pulmonary edema" in text
     assert set(ids) >= {"LAB-ACC-5301", "D-4001-A"}
 
@@ -105,6 +105,7 @@ def test_over_long_summary_is_retried_then_trimmed(bundle, store):
     fake = FakeSummarizer(long, long)
     summary = SummaryService(store, fake).summarize(PID, bundle, "h")
     assert len(fake.calls) == 2 and "limit is 200" in fake.calls[1]
+    assert "limit is 200" in summary.retry_reason
     assert summary.word_count <= MAX_SUMMARY_WORDS
     assert summary.confidence != "high"
 
@@ -189,10 +190,10 @@ def _client(stop_reason="end_turn", text=None):
 
 def test_claude_adapter_sends_structured_output_request_and_parses():
     client, messages = _client()
-    result = ClaudeSummarizer("claude-opus-5-5", client=client).generate("[X] record", {})
+    result = ClaudeSummarizer("claude-sonnet-5-5", client=client).generate("[X] record", {})
     assert result == GOOD
     kw = messages.kwargs
-    assert kw["model"] == "claude-opus-5-5"
+    assert kw["model"] == "claude-sonnet-5-5"
     assert kw["output_config"]["format"]["type"] == "json_schema"
     assert set(kw["output_config"]["format"]["schema"]["required"]) == set(SummaryContent.model_fields)
     assert "<records>" in kw["messages"][0]["content"] and "ONLY facts" in kw["system"]
@@ -203,4 +204,56 @@ def test_claude_adapter_sends_structured_output_request_and_parses():
 def test_claude_adapter_errors_become_summary_errors(stop_reason, text, msg):
     client, _ = _client(stop_reason, text)
     with pytest.raises(SummaryError, match=msg):
-        ClaudeSummarizer("claude-opus-5-5", client=client).generate("x", {})
+        ClaudeSummarizer("claude-sonnet-5-5", client=client).generate("x", {})
+
+
+@pytest.mark.parametrize("claim", [
+    "WBC 16.4 10*3/uL (ref 4.0-11.0) flagged HIGH",   # Claude wording that the first checker rejected
+    "Elevated creatinine (1.9 mg/dL)",
+    "Breast MRI planned; no result in records",
+    "HbA1c 10.8 % (ref 4.0-5.6), high",
+    "Repeat BMP in 1 week requested; no result in records",
+    "Latest eGFR 27 mL/min/1.73m2 and A1c 10.8 %; no newer values",
+])
+def test_faithful_paraphrase_is_not_flagged(bundles, claim):
+    """False positives found when reviewing real Claude output: correct statements reworded."""
+    rendered = "\n".join(render_bundle(bundles[p])[0] for p in ("pt-0078901", "pt-0089012", "pt-0099012",
+                                                                       "pt-0012345"))
+    content = SummaryContent.model_validate(GOOD.model_dump() | {"key_diagnoses": [claim], "recent_media": [],
+                                                                 "flagged_anomalies": []})
+    assert check_grounding(content, rendered, []).ungrounded == []
+
+
+def test_patient_level_flag_can_be_cited(bundles):
+    """Robert Williams' duplicate-MRN flag is not a record; the model is told to cite PATIENT,
+    which must count as a valid citation (Claude once invented 'DATA-QUALITY FLAGS' instead)."""
+    rendered, ids = render_bundle(bundles["pt-0045678"])
+    assert "[PATIENT] DATA-QUALITY FLAGS: possible_duplicate_mrn" in rendered and "PATIENT" in ids
+    content = SummaryContent.model_validate(GOOD.model_dump() | {"recent_media": [], "flagged_anomalies": [
+        {"finding": "possible duplicate MRN", "record_id": "PATIENT"}]})
+    assert check_grounding(content, rendered, ids).invalid_citations == []
+
+
+def test_absence_clause_still_checks_numbers(bundles):
+    """Skipping word checks after "; no ..." must not let an invented value through."""
+    rendered, ids = render_bundle(bundles["pt-0012345"])
+    content = SummaryContent.model_validate(GOOD.model_dump() | {"recent_media": [], "flagged_anomalies": [],
+                                                                 "key_diagnoses": ["eGFR 27; no value below 19"]})
+    assert check_grounding(content, rendered, ids).ungrounded == ["eGFR 27; no value below 19"]
+
+
+def test_committed_claude_summaries_pass_quality_checks(bundles):
+    """The real Claude output reviewed in docs/summary_review.md (stored in docs/claude_summaries.json)."""
+    from app.config import PROJECT_ROOT
+    from app.summarization.summarizer import ClinicalSummary
+
+    stored = json.loads((PROJECT_ROOT / "docs" / "claude_summaries.json").read_text(encoding="utf-8"))
+    assert set(stored) == set(bundles)
+    for pid, raw in stored.items():
+        s = ClinicalSummary.model_validate(raw)
+        assert s.generator.startswith("claude:") and s.disclaimer == DISCLAIMER
+        assert s.word_count <= MAX_SUMMARY_WORDS and len(s.key_diagnoses) <= 6
+        rendered, ids = render_bundle(bundles[pid])
+        report = check_grounding(SummaryContent.model_validate(s.model_dump()), rendered, ids)
+        assert report.score == 1.0 and not report.invalid_citations, (pid, report)
+        assert "**" not in json.dumps(raw)

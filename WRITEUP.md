@@ -8,7 +8,7 @@ Abel Atkelet · github.com/abelxo19/ehr-media-intelligence
 - **Flag, don't merge.** A second MRN with the same name and DOB becomes an alternate identifier for review. → `test_conflicting_mrn_is_linked_as_alternate_and_flagged`
 - **R4B models.** `fhir.resources` 8 ships only R4B and STU3; my five resource types are the same in R4. It skips value-set checks (it accepted `gender: "M"`), so I added them. → `test_validator_reports_schema_errors_with_location`
 - **Hybrid search.** Pure MiniLM ranked a sodium panel first for "critical potassium"; a 20% keyword term fixes it. → `test_keyword_boost_fixes_critical_potassium_ranking`
-- **Offline fallback.** The same schema when Claude is unavailable, retried on the next run. → `test_llm_failure_falls_back_to_rule_based`
+- **Offline fallback.** The same schema when Claude is unavailable. Reviewing it fixed its mammogram finding (now the BI-RADS 4C sentence). → `test_mammogram_finding_uses_the_significant_sentence`
 
 ## With more time
 
@@ -29,7 +29,8 @@ Abel Atkelet · github.com/abelxo19/ehr-media-intelligence
 ## Validating AI summary quality
 
 - **Constrained output.** A JSON schema, and every finding cites a record id. → `app/summarization/prompt.py`
-- **Grounding check.** Numbers, key words and record ids must exist in the source. One corrective retry; confidence is computed, not self-reported. → `check_grounding` in `summarizer.py`
+- **Grounding check.** Numbers, key words and record ids must exist in the source; one corrective retry. → `check_grounding` in `summarizer.py`
 - **Adversarial tests.** An invented diagnosis, a made-up K 7.9, a fake record id and a 250-word summary: all caught. → `tests/test_summarizer.py`
-- **Manual review of all 12 summaries.** All 100% grounded, 43–149 words. Fixed: the mammogram finding (now BI-RADS 4C) and an age/DOB mismatch in the data. Still open: COPD ranked above suspected cancer, and a missing endarterectomy. → `docs/summary_review.md`
-- **Live Claude run.** The key authenticated, but the account had no credit, so all 12 fell back. Claude output is not yet reviewed. → `docs/summary_review.md`
+- **Real output reviewed.** Claude Sonnet 5.5 summarized all 12 patients: no invented values, 81–178 words, every citation valid. → `docs/summary_review.md`
+- **Review drove fixes.** Run 1 needed 11 retries: mostly my checker rejecting correct paraphrases, plus leaked markdown and lab values relabelled as diagnoses. A tighter prompt and checker brought it to 2. → `test_faithful_paraphrase_is_not_flagged`
+- **Still open.** Mild over-reading ("on both dates") and symptoms listed as diagnoses: the checker verifies facts, not judgement. → `docs/summary_review.md`

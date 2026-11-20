@@ -71,6 +71,7 @@ class ClinicalSummary(SummaryContent):
     generator: str
     prompt_version: str = PROMPT_VERSION
     grounding: GroundingReport
+    retry_reason: str | None = Field(None, description="Why the first draft was rejected, if it was")
     source_record_ids: list[str]
     content_hash: str
     generated_at: str
@@ -209,6 +210,14 @@ def _first_sentence(text: str, max_words: int = 22) -> str:
     return " ".join(words[:max_words]) + ("..." if len(words) > max_words else "")
 
 
+def _lab_label(obs: dict[str, Any]) -> str:
+    """'Potassium: 6.3 mmol/L (ref 3.5-5.1) CRITICAL HIGH' for the offline summary."""
+    from app.summarization.prompt import _format_observation
+
+    label = _format_observation(obs)[2:]
+    return re.sub(r", (critical high|critical low|high|low|abnormal)$", lambda m: " " + m.group(1).upper(), label)
+
+
 def _key_sentence(text: str, max_words: int = 18) -> str:
     """Prefer the first clinically significant sentence (suspicious / acute / BI-RADS ...)
     over the first sentence, which in reports without an IMPRESSION is often just the exam name."""
@@ -218,7 +227,7 @@ def _key_sentence(text: str, max_words: int = 18) -> str:
 
 
 class RuleBasedSummarizer:
-    name = "rule-based:v2"
+    name = "rule-based:v3"
 
     def generate(self, rendered: str, bundle: dict[str, Any], feedback: str | None = None) -> SummaryContent:
         from app.summarization.prompt import _decode, _format_observation
@@ -258,13 +267,9 @@ class RuleBasedSummarizer:
             if obs:
                 abnormal = [o for o in obs if o.get("interpretation") and
                             o["interpretation"][0]["coding"][0]["code"] != "N"]
-                finding = "; ".join(_format_observation(o)[2:].replace(" ** ", " ").replace(" **", "")
-                                    for o in (abnormal or obs)[:3])
+                finding = "; ".join(_lab_label(o) for o in (abnormal or obs)[:3])
                 for o in abnormal:
-                    code = o["interpretation"][0]["coding"][0]["code"]
-                    label = _format_observation(o)[2:].replace(" ** ", " ").replace(" **", "")
-                    anomalies.append(Anomaly(finding=label,
-                                             record_id=rid))
+                    anomalies.append(Anomaly(finding=_lab_label(o), record_id=rid))
             else:
                 finding = _key_sentence(conclusion, 18)
                 if _SUSPICIOUS.search(conclusion) and cat != "LAB":
@@ -289,8 +294,19 @@ class RuleBasedSummarizer:
 # ---------------------------------------------------------------------------------------
 _STOP = {"with", "from", "that", "this", "were", "have", "left", "right", "acute", "chronic", "mild", "type",
          "stage", "possible", "suspected", "status", "post", "history", "disease", "severe", "moderate"}
+# Words a faithful paraphrase adds that the source need not contain ("elevated creatinine 1.9",
+# "MRI planned; no result in records"). Numbers are still checked strictly, so a changed value is
+# always caught; these words only stop correct rewording from being flagged.
+_STOP |= {"flagged", "elevated", "raised", "decreased", "reduced", "high", "critical", "abnormal", "normal",
+          "planned", "plan", "pending", "documented", "records", "record", "result", "results", "noted",
+          "recommended", "follow-up", "later", "outcome", "consistent", "finding", "findings", "showed", "shows",
+          "repeat", "after", "before", "since", "still", "about", "recent", "latest", "initial", "prior",
+          "previous", "ordered", "available", "none", "without", "being", "added", "started", "stopped", "done",
+          "months", "weeks", "days", "year", "years", "old", "patient", "requested", "scheduled", "awaiting"}
 _ABBREV = {"nstemi": "non-st", "ckd": "kidney", "copd": "copd", "aki": "kidney", "hfref": "heart failure",
-           "dm": "diabetes", "t2dm": "diabetes", "htn": "hypertension", "ica": "carotid", "mca": "mca"}
+           "dm": "diabetes", "t2dm": "diabetes", "htn": "hypertension", "ica": "carotid", "mca": "mca",
+           "hba1c": "hemoglobin a1c", "a1c": "a1c", "bmp": "metabolic panel", "cbc": "blood count",
+           "dexa": "dexa", "npdr": "retinopathy", "idc": "ductal carcinoma", "lvef": "lvef"}
 _NUMBER = re.compile(r"\d+(?:\.\d+)?")
 
 
@@ -308,8 +324,11 @@ def _claim_grounded(claim: str, source: str) -> bool:
     for num in _NUMBER.findall(claim):
         if num not in src:
             return False
-    words = [w for w in re.findall(r"[a-z][a-z0-9\-]{3,}", claim.lower()) if w not in _STOP]
-    words += [w for w in re.findall(r"\b[a-z]{2,6}\b", claim.lower()) if w in _ABBREV]
+    # "...; no newer values in records" states an absence, which word matching cannot verify,
+    # so only the positive part is word-checked (its numbers were already checked above).
+    positive = re.split(r";\s*no\b", claim, maxsplit=1, flags=re.I)[0]
+    words = [w for w in re.findall(r"[a-z][a-z0-9\-]{3,}", positive.lower()) if w not in _STOP]
+    words += [w for w in re.findall(r"\b[a-z0-9]{2,6}\b", positive.lower()) if w in _ABBREV]
     if not words:
         return True
     hits = sum(1 for w in words if w in src or w.rstrip("s") in src or _ABBREV.get(w, "\x00") in src)
@@ -417,6 +436,7 @@ class SummaryService:
         content = summarizer.generate(rendered, bundle)
         report = check_grounding(content, rendered, record_ids)
         retried = False
+        retry_reason = None
         words = count_words(content)
         problems = []
         if words > MAX_SUMMARY_WORDS:
@@ -428,7 +448,8 @@ class SummaryService:
         if problems and not isinstance(summarizer, RuleBasedSummarizer):
             self.stats["retries"] += 1
             retried = True
-            content = summarizer.generate(rendered, bundle, feedback=" ".join(problems))
+            retry_reason = " ".join(problems)
+            content = summarizer.generate(rendered, bundle, feedback=retry_reason)
             report = check_grounding(content, rendered, record_ids)
         if count_words(content) > MAX_SUMMARY_WORDS:
             content = _trim(content)
@@ -436,6 +457,6 @@ class SummaryService:
         return ClinicalSummary(
             **content.model_dump(), patient_id=patient_id, word_count=words,
             confidence=_confidence(report, words, retried), generator=summarizer.name, grounding=report,
-            source_record_ids=record_ids, content_hash=content_hash,
+            retry_reason=retry_reason, source_record_ids=record_ids, content_hash=content_hash,
             generated_at=datetime.now(timezone.utc).isoformat(timespec="seconds"),
         )

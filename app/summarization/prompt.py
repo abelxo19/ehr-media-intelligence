@@ -6,8 +6,9 @@ import base64
 from datetime import date
 from typing import Any
 
-PROMPT_VERSION = "2026-11-v3"
+PROMPT_VERSION = "2026-11-v5"
 MAX_SUMMARY_WORDS = 200
+PATIENT_ID = "PATIENT"  # citation id for patient-level data-quality flags
 
 SYSTEM_PROMPT = f"""\
 You are a clinical documentation assistant that writes chart summaries for clinicians \
@@ -19,7 +20,8 @@ starts with an id in square brackets, e.g. [LAB-ACC-5001].
 Write a structured summary with these fields:
 - chief_concern: the main reason the patient is currently receiving care, one sentence.
 - key_diagnoses: up to 6 diagnoses that are explicitly documented in the records, most \
-important first. Short noun phrases (e.g. "Type 2 diabetes mellitus").
+important first. Short noun phrases (e.g. "Type 2 diabetes mellitus"). Conditions only: \
+no risk factors, family history, procedures or individual lab values.
 - recent_media: up to 4 of the most recent labs / imaging / pathology / cardiology reports, \
 newest first, each with its date, a short type label, a one-line key finding and the record id.
 - flagged_anomalies: up to 5 findings that need attention (critical or abnormal labs, \
@@ -32,10 +34,15 @@ Rules - these matter more than style:
 that are not written there. If something is uncertain in the source ("suspected", \
 "concerning for"), keep that uncertainty.
 2. Quote numeric values exactly as written, with units.
-3. Every recent_media and flagged_anomalies item must cite the id of the record it came from.
+3. Every recent_media and flagged_anomalies item must cite the id of the record it came from; \
+for patient-level data-quality flags cite {PATIENT_ID}.
 4. The whole summary (all fields together) must be under {MAX_SUMMARY_WORDS} words. Be terse; \
 clinicians prefer fragments over full sentences.
 5. Do not give treatment recommendations of your own; only report plans documented in the records.
+6. Use the records' own clinical terms. Do not relabel a lab value as a new diagnosis \
+(write "potassium 6.3 mmol/L (critical high)", not "hyperkalemia", unless a note says so), \
+and do not call a finding persistent or worsening unless two dated results show it.
+7. Plain text only: no markdown, asterisks or bracketed flags in any field.
 """
 
 
@@ -70,7 +77,7 @@ def render_bundle(bundle: dict[str, Any], *, today: date | None = None) -> tuple
     ]
     flags = [t["code"] for t in (patient.get("meta") or {}).get("tag", [])]
     if flags:
-        lines.append(f"DATA-QUALITY FLAGS: {', '.join(flags)} (alternate MRNs: "
+        lines.append(f"[{PATIENT_ID}] DATA-QUALITY FLAGS: {', '.join(flags)} (alternate MRNs: "
                      f"{', '.join(i['value'] for i in patient['identifier'][1:]) or 'none'})")
     lines.append(f"TODAY: {today.isoformat()}")
     lines.append("")
@@ -101,7 +108,8 @@ def render_bundle(bundle: dict[str, Any], *, today: date | None = None) -> tuple
             items.append((when, rid, f"[{rid}] {when or 'undated'} | {category.upper()}: {label}\n{body}"))
     items.sort(key=lambda x: x[0], reverse=True)
     lines += [text + "\n" for _, _, text in items]
-    return "\n".join(lines).strip(), [rid for _, rid, _ in items]
+    ids = [rid for _, rid, _ in items] + ([PATIENT_ID] if flags else [])
+    return "\n".join(lines).strip(), ids
 
 
 def _format_observation(obs: dict[str, Any]) -> str:
@@ -116,5 +124,5 @@ def _format_observation(obs: dict[str, Any]) -> str:
     if obs.get("interpretation"):
         code = obs["interpretation"][0]["coding"][0]
         if code["code"] != "N":
-            interp = f" ** {code['display'].upper()} **"
+            interp = f", {code['display'].lower()}"
     return f"- {name}: {value}{ref}{interp}"

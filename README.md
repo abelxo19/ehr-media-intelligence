@@ -37,7 +37,7 @@ Then open <http://127.0.0.1:8000> for the UI and <http://127.0.0.1:8000/docs> fo
 pytest
 ```
 
-That runs all 142 tests, about 40 s. The end-to-end tests use the real embedding model.
+That runs all 151 tests, about 40 s. The end-to-end tests use the real embedding model.
 
 Useful pipeline options:
 
@@ -124,12 +124,13 @@ tests/                      pytest suite
 
 ### Task 3: AI summarization
 
-* **Claude** (`claude-opus-5-5`) via the official `anthropic` SDK with **structured output** (`output_config.format` JSON schema), so the response is always parseable. Effort is `low` because this is extraction, not reasoning-heavy. Server-side refusal fallback is enabled.
+* **Claude Sonnet 5.5** (`claude-sonnet-5-5`, set with `CLAUDE_MODEL`) via the official `anthropic` SDK with **structured output** (`output_config.format` JSON schema), so the response is always parseable. Effort is `low` because this is extraction, not reasoning-heavy. Server-side refusal fallback is enabled.
 * **Fields:** chief concern, key diagnoses, recent media records (date, type, finding, **record id**), flagged anomalies (with record id), narrative, plus `confidence`, `disclaimer`, `word_count`, `grounding`, `generator`, `prompt_version`.
 * **Prompt engineering** (`prompt.py`): the Bundle is rendered as compact text with record ids, labs folded into their report with `** HIGH **` markers, and newest first. The rules are: only facts in the records, keep the source's uncertainty, quote numbers exactly, cite record ids, stay under 200 words, and make no own recommendations.
 * **Quality guards** (`summarizer.py`): after every generation I count words and run a **grounding check**. Every number in a claim must appear in the source, most content words must appear, and every cited record id must exist. If anything fails, I re-prompt **once** with the specific problem. If the summary is still too long, I trim list items. Confidence is computed from these checks rather than self-reported by the model.
 * **Cache:** SQLite, keyed by `sha256(patient_id + bundle content hash + prompt version + generator)`. Re-runs make zero API calls, and changing any record or the prompt invalidates exactly the affected patients.
 * **Disclaimer** on every summary, shown prominently in the UI.
+* **Real output:** I ran Claude Sonnet 5.5 on all 12 patients and reviewed every summary against its source. The summaries are committed in [docs/claude_summaries.json](docs/claude_summaries.json), and the review (per-patient verdicts, and how three runs tightened the prompt and checker from 11 retries to 2) is in [docs/summary_review.md](docs/summary_review.md). Each summary records why its first draft was rejected (`retry_reason`), if it was.
 * **Fallback:** if the API fails (no key, rate limit, outage, refusal) that patient gets a deterministic rule-based summary in the same schema. It is **not** cached under the Claude key, so the next run retries Claude.
 
 ### Task 4: Semantic search
@@ -189,14 +190,14 @@ There are 12 fictional patients and 56 clean records after processing, from 23 p
 
 ## Testing
 
-`pytest` runs **142 tests**:
+`pytest` runs **151 tests**:
 
 | File | Covers |
 |---|---|
 | `test_cleaning.py` | every normalizer, edge cases (dates, gender, MRN, names, OCR text, labs, doc typing) |
 | `test_ingestion.py` | loaders, identity resolution, de-duplication, audit log, encounter linking |
 | `test_fhir.py` | resource content, reference integrity, determinism, validator catching bad data, report, store |
-| `test_summarizer.py` | schema, disclaimer, 200-word guard, hallucination/number/citation detection, retry, cache, fallback, Claude request shape and error handling (mocked) |
+| `test_summarizer.py` | schema, disclaimer, 200-word guard, hallucination/number/citation detection, paraphrase false positives, retry, cache, fallback, Claude request shape and error handling (mocked), and the committed real Claude summaries |
 | `test_api.py` | search ranking, filters, validation errors, all endpoints, **real-model relevance** and **< 2 s latency** |
 | `test_frontend.py` | UI served, labels/ARIA landmarks present, JS wired to the API |
 
