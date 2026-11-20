@@ -3,7 +3,7 @@
     python scripts/build_writeup_pdf.py
 
 Only the small Markdown subset used in WRITEUP.md is supported (headings, bullets,
-numbered lists with nested bullets, **bold**, `code`, a byline and "claim -> evidence" pointers), which avoids a markdown dependency.
+**bold**, `code`, a byline and "claim -> evidence" pointers), which avoids a markdown dependency.
 """
 
 from __future__ import annotations
@@ -13,11 +13,11 @@ import re
 import shutil
 import subprocess
 import sys
+import tempfile
 from pathlib import Path
 
 ROOT = Path(__file__).resolve().parent.parent
 SRC = ROOT / "WRITEUP.md"
-OUT_HTML = ROOT / "docs" / "writeup.html"
 OUT_PDF = ROOT / "docs" / "WRITEUP.pdf"
 
 CSS = """
@@ -119,11 +119,12 @@ def find_browser() -> str:
 
 def main() -> None:
     body = convert(SRC.read_text(encoding="utf-8"))
-    OUT_HTML.parent.mkdir(exist_ok=True)
-    OUT_HTML.write_text(f"<!doctype html><html lang='en'><head><meta charset='utf-8'><title>Write-up</title>"
+    with tempfile.TemporaryDirectory() as tmp:
+        page = Path(tmp) / "writeup.html"
+        page.write_text(f"<!doctype html><html lang='en'><head><meta charset='utf-8'><title>Write-up</title>"
                         f"<style>{CSS}</style></head><body>{body}</body></html>", encoding="utf-8")
-    subprocess.run([find_browser(), "--headless", "--disable-gpu", "--no-pdf-header-footer",
-                    f"--print-to-pdf={OUT_PDF}", OUT_HTML.as_uri()], check=True, capture_output=True, timeout=120)
+        subprocess.run([find_browser(), "--headless", "--disable-gpu", "--no-pdf-header-footer",
+                        f"--print-to-pdf={OUT_PDF}", page.as_uri()], check=True, capture_output=True, timeout=120)
     print(f"Wrote {OUT_PDF}")
 
 

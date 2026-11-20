@@ -12,7 +12,3 @@ filterwarnings = [
     "ignore::DeprecationWarning",
     "ignore::FutureWarning",
 ]
-
-[tool.ruff]
-line-length = 120
-target-version = "py311"

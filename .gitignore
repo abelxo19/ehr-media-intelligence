@@ -3,7 +3,6 @@ __pycache__/
 *.py[cod]
 .venv/
 .pytest_cache/
-.ruff_cache/
 
 # Generated at runtime (rebuilt by `python -m app.pipeline`)
 var/
@@ -19,4 +18,3 @@ node_modules/
 Thumbs.db
 .vscode/
 .idea/
-.claude/
