@@ -65,5 +65,5 @@ Used when Claude is unavailable. Words 43-149.
 
 ## Earlier failed run
 
-My first Claude run (2026-11-20, before the account had credit) returned HTTP 400 *"Your credit balance
+My first Claude run (2026-11-20, before my account had credit) returned HTTP 400 *"Your credit balance
 is too low"* for every request; all 12 patients fell back to the offline summarizer as designed.
