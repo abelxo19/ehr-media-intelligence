@@ -149,3 +149,19 @@ def test_unidentifiable_patient_is_dropped_not_guessed():
 def test_load_directory_orders_json_first():
     batch = load_directory(RAW_DIR)
     assert batch.patients[0].source.startswith("ehr_export.json")
+
+
+def test_ages_stated_in_notes_match_date_of_birth(dataset):
+    """Synthetic-data sanity check. Manual review found an ED note saying "52-year-old" for a
+    patient who was 53 on the visit date; this guards against that kind of inconsistency."""
+    import re
+
+    patients = {p.patient_id: p for p in dataset.patients}
+    checked = 0
+    for r in dataset.records:
+        for stated in re.findall(r"(\d+)-year-old", r.text):
+            dob, when = patients[r.patient_id].birth_date, r.record_date.date()
+            age = when.year - dob.year - ((when.month, when.day) < (dob.month, dob.day))
+            assert int(stated) == age, (r.record_id, stated, age)
+            checked += 1
+    assert checked >= 1

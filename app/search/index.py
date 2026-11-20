@@ -101,8 +101,9 @@ class VectorIndex:
 
     # -- query -------------------------------------------------------------------------------
     def search(self, query: str, *, top_k: int = 5, resource_types: set[str] | None = None,
-               date_from: date | None = None, date_to: date | None = None) -> tuple[list[Hit], int, float]:
-        """Return (hits, candidates_after_filter, elapsed_ms)."""
+               date_from: date | None = None, date_to: date | None = None,
+               lexical_weight: float = LEXICAL_WEIGHT) -> tuple[list[Hit], int, float]:
+        """Return (hits, candidates_after_filter, elapsed_ms). ``lexical_weight=0`` = pure semantic."""
         start = time.perf_counter()
         if not self.chunks:
             return [], 0, 0.0
@@ -132,7 +133,7 @@ class VectorIndex:
                 if (date_from and when < date_from) or (date_to and when > date_to):
                     continue
             lexical = keyword_overlap(terms, f"{doc.title} {doc.text}")
-            score = (1 - LEXICAL_WEIGHT) * cosine + LEXICAL_WEIGHT * lexical
+            score = (1 - lexical_weight) * cosine + lexical_weight * lexical
             hits.append(Hit(doc=doc, score=score, chunk=self.chunks[pos].split(". ", 1)[-1],
                             semantic_score=cosine, keyword_score=lexical))
         candidates = len(hits)

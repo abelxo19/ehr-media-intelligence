@@ -143,6 +143,17 @@ def test_semantic_relevance(real_client, query, patient):
     assert results[0]["patient_id"] == patient, [(r["patient_id"], r["title"], r["score"]) for r in results]
 
 
+def test_keyword_boost_fixes_critical_potassium_ranking(real_client):
+    """Why the hybrid score exists: pure MiniLM ranks Robert Williams' heart-failure panel
+    (NT-proBNP, sodium) first for "critical potassium"; the keyword term puts the actual
+    critical potassium result (LAB-ACC-5501) first."""
+    index = real_client.app.state.ehr.index
+    semantic_only, _, _ = index.search("critical potassium", lexical_weight=0.0)
+    hybrid, _, _ = index.search("critical potassium")
+    assert semantic_only[0].doc.doc_id == "LAB-ACC-5301"
+    assert hybrid[0].doc.doc_id == "LAB-ACC-5501"
+
+
 def test_latency_under_two_seconds_for_50_plus_records(real_client):
     assert real_client.get("/health").json()["indexed_documents"] >= 50
     search(real_client, "warm up")

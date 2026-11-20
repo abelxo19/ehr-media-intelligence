@@ -140,14 +140,29 @@ def test_llm_failure_falls_back_to_rule_based(bundle, store):
     assert len(fake.calls) == 1
 
 
-@pytest.mark.parametrize("pid", ["pt-0012345", "pt-0023456", "pt-0045678", "pt-0067890", "pt-0099012",
-                                 "pt-0101123", "pt-0123345"])
+ALL_PATIENTS = ["pt-0012345", "pt-0023456", "pt-0034567", "pt-0045678", "pt-0056789", "pt-0067890",
+                "pt-0078901", "pt-0089012", "pt-0099012", "pt-0101123", "pt-0112234", "pt-0123345"]
+
+
+@pytest.mark.parametrize("pid", ALL_PATIENTS)
 def test_rule_based_summaries_are_grounded_and_short(bundles, pid):
+    """Backs the write-up claim: all 12 summaries are fully grounded, under 200 words, <= 6 diagnoses
+    (per-patient numbers are recorded in docs/summary_review.md)."""
     rendered, ids = render_bundle(bundles[pid])
     content = RuleBasedSummarizer().generate(rendered, bundles[pid])
     assert count_words(content) <= MAX_SUMMARY_WORDS
+    assert len(content.key_diagnoses) <= 6
     report = check_grounding(content, rendered, ids)
     assert report.score == 1.0 and not report.invalid_citations, report
+
+
+def test_mammogram_finding_uses_the_significant_sentence(bundles):
+    """Regression from manual review: the mammogram report has no IMPRESSION section and its first
+    sentence ("Diagnostic mammogram, left breast.") says nothing; the BI-RADS sentence must be used."""
+    content = RuleBasedSummarizer().generate(render_bundle(bundles["pt-0099012"])[0], bundles["pt-0099012"])
+    mammo = next(m for m in content.recent_media if m.record_id == "D-9001-A")
+    assert "BI-RADS 4C" in mammo.finding
+    assert mammo.finding != "Diagnostic mammogram, left breast."
 
 
 def test_rule_based_flags_critical_lab_first(bundle):

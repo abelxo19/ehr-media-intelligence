@@ -3,7 +3,7 @@
     python scripts/build_writeup_pdf.py
 
 Only the small Markdown subset used in WRITEUP.md is supported (headings, bullets,
-numbered lists with nested bullets, **bold**, `code`), which avoids a markdown dependency.
+numbered lists with nested bullets, **bold**, `code`, a byline and "claim -> evidence" pointers), which avoids a markdown dependency.
 """
 
 from __future__ import annotations
@@ -21,29 +21,41 @@ OUT_HTML = ROOT / "docs" / "writeup.html"
 OUT_PDF = ROOT / "docs" / "WRITEUP.pdf"
 
 CSS = """
-@page { size: Letter; margin: 0.45in 0.55in; }
-body { font-family: 'Segoe UI', Arial, sans-serif; font-size: 8.6pt; line-height: 1.32; color: #1e293b; }
-h1 { font-size: 13.5pt; margin: 0 0 4pt; color: #133f3a; border-bottom: 2px solid #2a9d8f; padding-bottom: 3pt; }
-h2 { font-size: 9.8pt; margin: 7pt 0 2pt; color: #1b6a60; }
-ul, ol { margin: 0 0 0 13pt; padding: 0; }
-ul ul { margin-top: 1pt; }
-li { margin: 0 0 1.6pt; }
-p { margin: 0 0 3pt; }
-code { font-family: Consolas, monospace; font-size: 8pt; background: #f1f5f9; padding: 0 2px; border-radius: 2px; }
-strong { color: #0f172a; }
-.meta { color: #64748b; font-size: 8pt; margin-bottom: 4pt; }
+@page { size: Letter; margin: 0.55in 0.85in 0.5in; }
+body { font-family: 'Segoe UI', Arial, sans-serif; font-size: 9.5pt; line-height: 1.42; color: #334155; }
+h1 { font-size: 16pt; font-weight: 600; margin: 0; color: #0f172a; letter-spacing: -0.01em; }
+.meta { color: #94a3b8; font-size: 8.8pt; margin: 2pt 0 14pt; }
+h2 { font-size: 8.4pt; font-weight: 700; text-transform: uppercase; letter-spacing: 0.08em;
+     color: #2a9d8f; margin: 12pt 0 4pt; }
+ul, ol { margin: 0; padding-left: 12pt; }
+li { margin: 0 0 3pt; padding-left: 2pt; }
+li::marker { color: #cbd5e1; }
+p { margin: 0 0 4pt; }
+strong { color: #0f172a; font-weight: 600; }
+code { font-family: Consolas, monospace; font-size: 8.6pt; color: #475569; }
+.ev { display: block; color: #94a3b8; font-size: 8pt; }
+.ev code { color: #94a3b8; font-size: 7.8pt; }
 """
+EVIDENCE = " → "  # "claim -> evidence" pointers are rendered small and grey
 
 
-def inline(text: str) -> str:
+def _fmt(text: str) -> str:
     text = html.escape(text, quote=False)
     text = re.sub(r"`([^`]+)`", r"<code>\1</code>", text)
     return re.sub(r"\*\*([^*]+)\*\*", r"<strong>\1</strong>", text)
 
 
+def inline(text: str) -> str:
+    if EVIDENCE in text:
+        claim, evidence = text.split(EVIDENCE, 1)
+        return f'{_fmt(claim)}<span class="ev">→ {_fmt(evidence)}</span>'
+    return _fmt(text)
+
+
 def convert(md: str) -> str:
     out: list[str] = []
     stack: list[str] = []  # open list tags, by depth
+    after_title = False
 
     def close_to(depth: int) -> None:
         while len(stack) > depth:
@@ -56,9 +68,13 @@ def convert(md: str) -> str:
         if line.startswith("# "):
             close_to(0)
             out.append(f"<h1>{inline(line[2:])}</h1>")
-            out.append('<p class="meta">Onye 2026 AI Full-stack Assessment &middot; Python / FastAPI / FHIR R4 / '
-                       "Claude / FAISS / Tailwind</p>")
+            after_title = True
             continue
+        if after_title:  # the first plain paragraph after the title is the byline
+            after_title = False
+            if not line.startswith(("#", "-", " ")):
+                out.append(f'<p class="meta">{inline(line)}</p>')
+                continue
         if line.startswith("## "):
             close_to(0)
             out.append(f"<h2>{inline(line[3:])}</h2>")

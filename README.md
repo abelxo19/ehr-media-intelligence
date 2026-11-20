@@ -37,7 +37,7 @@ Then open <http://127.0.0.1:8000> for the UI and <http://127.0.0.1:8000/docs> fo
 pytest
 ```
 
-That runs all 134 tests, about 40 s. The end-to-end tests use the real embedding model.
+That runs all 142 tests, about 40 s. The end-to-end tests use the real embedding model.
 
 Useful pipeline options:
 
@@ -189,7 +189,7 @@ There are 12 fictional patients and 56 clean records after processing, from 23 p
 
 ## Testing
 
-`pytest` runs **134 tests**:
+`pytest` runs **142 tests**:
 
 | File | Covers |
 |---|---|
@@ -231,7 +231,7 @@ I also tested the UI by hand in a browser, against the real model and data:
 * **Offline fallback summarizer.** The demo, the tests and outages never depend on an external API, and summaries keep the same schema. It's clearly labelled `rule-based`, so nobody mistakes it for an LLM summary.
 * **Tailwind compiled once and committed.** It's production CSS with no Play CDN, and reviewers don't need Node.
 
-See [WRITEUP.md](WRITEUP.md) ([PDF](docs/WRITEUP.pdf)) for the one-page write-up (tradeoffs, improvements, FHIR/clinical research, and AI quality validation). Rebuild the PDF with `python scripts/build_writeup_pdf.py`.
+See [WRITEUP.md](WRITEUP.md) ([PDF](docs/WRITEUP.pdf)) for the one-page write-up (tradeoffs, improvements, FHIR/clinical research, and AI quality validation). Every claim in it points to a test or file; the per-patient summary review behind it is in [docs/summary_review.md](docs/summary_review.md) (regenerate with `python scripts/review_summaries.py`). Rebuild the PDF with `python scripts/build_writeup_pdf.py`.
 
 ## Notes
 
