@@ -106,7 +106,7 @@ tests/                      pytest suite
 | Conflicting identifiers | Same MRN + different DOB → `identifier_conflict`. Different MRN + same name/DOB (the sample has a transposition typo) → linked as an **alternate** MRN and flagged `possible_duplicate_mrn`. I deliberately do not silently merge, because in a real EHR that goes to HIM review. |
 | Canonical demographics | MRN → 7-digit zero-padded; gender → FHIR AdministrativeGender; names → given/family, re-cased (`GONZALEZ, MARIA` → Maria Gonzalez); DOB → ISO date. |
 | Validated IR + audit log | Pydantic v2 models (`Patient`, `Encounter`, `ClinicalRecord`, `LabResult`). **Every patient and record carries its own `audit` list** (`field`, `action`, `before`, `after`, `reason`, `source` with the file and line/path). Dataset-level events are kept too, and everything is written to `var/reports/audit_log.json`. |
-| ≥ 3 unit-tested edge cases | `tests/test_cleaning.py` + `tests/test_ingestion.py`: 65 tests. |
+| ≥ 3 unit-tested edge cases | `tests/test_cleaning.py` + `tests/test_ingestion.py`: 66 tests. |
 
 ### Task 2: FHIR R4
 
