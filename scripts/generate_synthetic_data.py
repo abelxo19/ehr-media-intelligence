@@ -120,7 +120,7 @@ EHR_EXPORT = {
                             "date": "2026-05-18T07:42:00",
                             "author": "Dr. Karen Liu, Emergency Medicine",
                             "text": (
-                                "52-year-old male with 2 hours of substernal chest pressure radiating to left arm, "
+                                "53-year-old male with 2 hours of substernal chest pressure radiating to left arm, "
                                 "diaphoresis. ECG shows 2 mm ST depression in V4-V6. Initial high-sensitivity troponin "
                                 "88 ng/L, repeat 240 ng/L. Diagnosis: NSTEMI. Aspirin, heparin drip, atorvastatin 80 mg "
                                 "started. Cardiology consulted for catheterization."

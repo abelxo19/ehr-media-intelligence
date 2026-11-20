@@ -1,0 +1,51 @@
+<!doctype html><html lang='en'><head><meta charset='utf-8'><title>Write-up</title><style>
+@page { size: Letter; margin: 0.45in 0.55in; }
+body { font-family: 'Segoe UI', Arial, sans-serif; font-size: 8.6pt; line-height: 1.32; color: #1e293b; }
+h1 { font-size: 13.5pt; margin: 0 0 4pt; color: #133f3a; border-bottom: 2px solid #2a9d8f; padding-bottom: 3pt; }
+h2 { font-size: 9.8pt; margin: 7pt 0 2pt; color: #1b6a60; }
+ul, ol { margin: 0 0 0 13pt; padding: 0; }
+ul ul { margin-top: 1pt; }
+li { margin: 0 0 1.6pt; }
+p { margin: 0 0 3pt; }
+code { font-family: Consolas, monospace; font-size: 8pt; background: #f1f5f9; padding: 0 2px; border-radius: 2px; }
+strong { color: #0f172a; }
+.meta { color: #64748b; font-size: 8pt; margin-bottom: 4pt; }
+</style></head><body><h1>EHR Media Intelligence Platform: Write-up</h1>
+<p class="meta">Onye 2026 AI Full-stack Assessment &middot; Python / FastAPI / FHIR R4 / Claude / FAISS / Tailwind</p>
+<h2>Tradeoffs I made and why</h2>
+<ul><li><strong>Auditable rules over "smart" cleaning.</strong> Every normalization is a small pure function that returns the value plus an audit entry with the source file and line. It is less flexible than ML entity resolution, but each change can be explained to a clinician or an HIM analyst.
+</li><li><strong>Link and flag, never silently merge.</strong> When two MRNs share a name and DOB, I keep the second as an alternate identifier and flag <code>possible_duplicate_mrn</code> instead of merging. A false merge mixes two people's charts, which is worse than a duplicate.
+</li><li><strong>R4B models from <code>fhir.resources</code>.</strong> v8 has no pure R4 package. The six resources I emit are structurally identical in R4 and R4B. The library also does not check terminology bindings (it accepted <code>gender: "M"</code>), so I added explicit required-binding checks.
+</li><li><strong>Exact FAISS search with hybrid scoring.</strong> A flat index is exact and fast at this scale, and it lets filters run before the top-5 cut. I added a 20% keyword-overlap term after pure MiniLM ranked a sodium panel above the critical potassium result for "critical potassium".
+</li><li><strong>Claude plus a deterministic fallback.</strong> The pipeline, tests and demo never depend on the network. Fallback summaries keep the same schema, are labelled <code>rule-based</code>, and are not cached under the Claude key, so the next run retries the LLM.
+</li></ul>
+<h2>What I would improve with more time</h2>
+<ul><li><strong>Search:</strong> real hybrid retrieval (BM25 + embeddings, reciprocal rank fusion), a clinical embedding model, and an approximate (HNSW) index with metadata pre-filtering at scale.
+</li><li><strong>Terminology:</strong> a terminology service (LOINC, SNOMED CT, RxNorm, UCUM) instead of local tables, and US Core profile validation with the HL7 Java validator.
+</li><li><strong>Inputs:</strong> real OCR on PDFs and images, and NLP extraction of problems and medications into <code>Condition</code>/<code>MedicationStatement</code>.
+</li><li><strong>Summary evaluation:</strong> a clinician-labelled eval set with an LLM-as-judge for faithfulness and completeness, run on every prompt change.
+</li><li><strong>Production readiness:</strong> auth with role-based access, access audit trail, encryption at rest, a BAA-covered LLM deployment, and an incremental pipeline instead of full rebuilds.
+</li></ul>
+<h2>FHIR and clinical concepts I had to research</h2>
+<ul><li><strong>FHIR structure:</strong> Bundle <code>collection</code> vs <code>transaction</code> vs <code>document</code>; <code>urn:uuid</code> fullUrls and reference resolution.
+</li><li><strong>Resource choice:</strong> <code>DocumentReference</code> for notes vs <code>DiagnosticReport</code> + <code>Observation</code> for results.
+</li><li><strong>Datatypes:</strong> <code>instant</code> vs <code>dateTime</code> (timezone rules); R4 <code>Encounter.class</code> as a single Coding.
+</li><li><strong>Terminology:</strong> v2-0074 report categories, v3 ObservationInterpretation (<code>H/L/HH/LL</code>), LOINC note and lab codes, UCUM units, v2-0203 <code>MR</code> identifiers.
+</li><li><strong>Clinical concepts:</strong> MRN formats and HIM duplicate-record review; BI-RADS and Lung-RADS categories; what makes a lab "critical"; NSTEMI and troponin; CKD staging and eGFR.
+</li></ul>
+<h2>How I validated AI summary quality</h2>
+<ol><li><strong>Constrained output.</strong> A JSON-schema structured output guarantees all five sections exist. The prompt requires a cited record id for every media item and anomaly, exact numbers, and no recommendations of the model's own.
+</li><li><strong>Automatic grounding check.</strong> Every diagnosis, finding and anomaly is checked against the rendered source:
+<ul><li>every number must appear in the source;
+</li><li>at least 60% of the content words (with abbreviation expansion) must appear;
+</li><li>every cited record id must exist.
+<br>On failure, or if the summary is over 200 words, I re-prompt once with the exact problem. Confidence is computed from these checks, not self-reported.
+</li></ul>
+</li><li><strong>Adversarial tests.</strong> Fake LLM responses with an invented diagnosis ("pulmonary embolism"), an invented value (K 7.9), a non-existent record id, and a 250-word narrative. All are caught, retried or trimmed, and down-graded.
+</li><li><strong>Manual review.</strong> I read all 12 patient summaries against their source notes. All scored 100% grounding, with 43–149 words and at most 5 diagnoses. The review caught three issues:
+<ul><li>a mammogram summary used the uninformative first sentence, so the summarizer now prefers the BI-RADS 4C sentence;
+</li><li>a synthetic note gave an age that didn't match the DOB, which I fixed in the data;
+</li><li>for one patient the extractive fallback picked COPD as chief concern rather than the suspected lung cancer. Grounding checks catch invented facts, not wrong priorities, which is why the LLM is the primary summarizer and clinician review stays in the loop.
+</li></ul>
+</li><li><strong>Live Claude run.</strong> The integration authenticated, but the trial account had no API credit, so every call fell back as designed. The tests cover the Claude request shape and error handling with a mocked client. Re-running <code>python -m app.pipeline --summarizer claude</code> after adding credit regenerates the summaries; they pass through the same checks.
+</li></ol></body></html>
