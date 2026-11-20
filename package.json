@@ -1,0 +1,13 @@
+{
+  "name": "ehr-media-intelligence-frontend",
+  "private": true,
+  "description": "Build-time only: compiles Tailwind CSS for frontend/. The compiled frontend/styles.css is committed, so Node is not needed to run the app.",
+  "scripts": {
+    "build:css": "tailwindcss -i frontend/src/input.css -o frontend/styles.css --minify",
+    "watch:css": "tailwindcss -i frontend/src/input.css -o frontend/styles.css --watch"
+  },
+  "devDependencies": {
+    "@tailwindcss/cli": "4.3.5",
+    "tailwindcss": "4.3.5"
+  }
+}
