@@ -1,0 +1,15 @@
+# Runtime
+fastapi==0.165.0
+uvicorn[standard]==0.54.0
+pydantic==2.14.4
+fhir.resources==8.3.0
+sentence-transformers==6.3.0
+torch==2.15.0
+faiss-cpu==1.16.0
+numpy==2.5.5
+anthropic==2.11.0
+tzdata==2026.6          # IANA zones for zoneinfo on Windows
+
+# Tests
+pytest==9.2.0
+httpx==0.28.1           # FastAPI TestClient

@@ -1,0 +1,174 @@
+==================== SCANNED DOCUMENT ====================
+Patient: Brown, Patricia
+MRN#: 112234
+DOB: 1962-06-30
+Sex: Female
+Date of Service: 03/26/2026
+Document Type: Progress Note
+Author: Dr. Ruth Klein, Endocrinology
+------------------------------------------------------------
+Pt seen for fatigue, weight gain and cold intolerance.  TSH 9.8 with low free T4
+consistent with primary hypo-
+thyroidism; anti-TPO antibodies positive (Hashimoto thyroiditis).  Started levo-
+thyroxine 75 mcg daily. Vitamin D deficiency (14 ng/mL) - started ergocalciferol
+50,000 IU weekly x 8 weeks.  Recheck TSH in 6 weeks.
+
+==================== SCANNED DOCUMENT ====================
+Patient: Brown, Patricia
+MRN#: 112234
+DOB: 1962-06-30
+Sex: Female
+Date of Service: 04/02/2026
+Document Type: DEXA Scan
+Author: Dr. Yuki Tanaka, Radiology
+------------------------------------------------------------
+Bone densitometry.  Lumbar spine T-score -2.7, left femoral neck T-score -2.1.
+IMPRESSION:  Osteoporosis of the lumbar spine.  FRAX 10-year major osteoporotic
+fracture risk 18%.
+
+==================== SCANNED DOCUMENT ====================
+Patient: Nguyen, Kevin
+MRN#: 0123345
+DOB: 10/12/1995
+Sex: M
+Date of Service: 2026-04-05
+Document Type: X-Ray Wrist
+Author: Dr. Samuel Reyes, Radiology
+------------------------------------------------------------
+Three views of the right wrist after fall onto outstretched hand while snow-
+boarding.  Non-displaced fracture of the scaphoid waist.  No dislocation.
+IMPRESSION:  Acute non-displaced scaphoid fracture.
+
+==================== SCANNED DOCUMENT ====================
+Patient: Nguyen, Kevin
+MRN#: 0123345
+DOB: 10/12/1995
+Sex: M
+Date of Service: 2026-04-05
+Document Type: Orthopedic Consult
+Author: Dr. Paul Grant, Orthopedics
+------------------------------------------------------------
+Right scaphoid waist fracture, non-displaced.  Placed in thumb spica cast for
+8-10 weeks.  Repeat X-ray in 2 weeks; consider CT or MRI if healing is delayed
+given risk of avascular necrosis.  No smoking.
+
+==================== SCANNED DOCUMENT ====================
+Patient: Adeyemi, Samuel
+MRN#: 89012
+DOB: 04/25/1980
+Sex: Male
+Date of Service: 07/11/2026
+Document Type: Progress Note
+Author: Dr. Grace Obi, Internal Medicine
+------------------------------------------------------------
+Hypertension, poorly controlled (BP 168/102) on lisinopril 40 mg and
+spironolactone 25 mg.  Labs today: potassium 6.3 mmol/L (critical) and
+creatinine 1.9 mg/dL, up from 1.2 last year.  Spironolactone stopped,
+lisinopril held, ECG without peaked T waves.  Sent to ED for repeat potassium
+and treatment.  Renal artery duplex ordered to evaluate secondary hypertension.
+
+==================== SCANNED DOCUMENT ====================
+Patient: Adeyemi, Samuel
+MRN#: 89012
+DOB: 04/25/1980
+Sex: Male
+Date of Service: 07/18/2026
+Document Type: Renal Artery Duplex
+Author: Dr. Samuel Reyes, Radiology
+------------------------------------------------------------
+Renal artery duplex ultrasound.  Peak systolic velocity 310 cm/s at the
+origin of the right renal artery, renal-aortic ratio 4.1.  IMPRESSION:
+Findings consistent with greater than 60% right renal artery stenosis.
+
+==================== SCANNED DOCUMENT ====================
+Patient: Okafor, James
+MRN#: 23456
+DOB: 11/02/1972
+Sex: M
+Date of Service: 06/20/2026
+Document Type: Progress Note
+Author: Dr. Ana Petrov, Cardiology
+------------------------------------------------------------
+One month post NSTEMI with LAD stent.  No angina.  Tolerating aspirin and
+ticagrelor.  Enrolled in cardiac rehabilitation.  LDL still 112 on atorva-
+statin 80 mg - adding ezetimibe 10 mg.  Repeat echo in 3 months.
+
+==================== SCANNED DOCUMENT ====================
+Patient: Kowalski, David
+MRN#: 67890
+DOB: 09/17/1966
+Sex: M
+Date of Service: 02/05/2026
+Document Type: PET-CT
+Author: Dr. Samuel Reyes, Nuclear Medicine
+------------------------------------------------------------
+FDG PET-CT.  13 mm spiculated right upper lobe nodule is FDG avid with SUV max
+7.2.  Mildly avid right hilar lymph node, SUV 3.1.  No distant metastatic
+disease.  IMPRESSION:  Findings consistent with primary lung malignancy,
+clinical stage at least T1c N1.
+
+==================== SCANNED DOCUMENT ====================
+Patient: Park, Grace
+MRN#: 99012
+DOB: 1977-08-08
+Sex: F
+Date of Service: 05/01/2026
+Document Type: Consult Note
+Author: Dr. Isabel Moreno, Medical Oncology
+------------------------------------------------------------
+New diagnosis of left breast invasive ductal carcinoma, ER/PR positive, HER2
+negative, clinical stage IIA (cT1c N1).  Plan: breast MRI, then neoadjuvant
+endocrine therapy versus upfront surgery per tumor board.  Genetic counseling
+referral (mother with breast cancer at 48).
+
+==================== SCANNED DOCUMENT ====================
+Patient: Chen, Linda
+MRN#: 0034567
+DOB: 07/21/1985
+Sex: F
+Date of Service: 01/21/2026
+Document Type: Progress Note
+Author: Dr. Rafael Ortiz, Pulmonology
+------------------------------------------------------------
+Asthma follow-up two weeks after ED visit.  Symptoms controlled on ICS-
+formoterol.  Spirometry FEV1 82% predicted with 14% bronchodilator response.
+Blood eosinophils 8.5% - consider biologic therapy if exacerbations recur.
+
+==================== SCANNED DOCUMENT ====================
+Patient: Williams, Robert
+MRN#: 45678
+DOB: 01/30/1949
+Sex: M
+Date of Service: 2026-03-10
+Document Type: Echocardiogram
+Author: Dr. Ana Petrov, Cardiology
+------------------------------------------------------------
+Transthoracic echo on guideline-directed medical therapy.  LVEF 30%, severe
+global hypokinesis.  Moderate functional mitral regurgitation.  Left atrium
+severely dilated.  IMPRESSION:  Persistent severe LV systolic dysfunction;
+meets criteria for primary prevention ICD.
+
+==================== SCANNED DOCUMENT ====================
+Patient: Muller, Thomas
+MRN#: 101123
+DOB: 02/14/1955
+Sex: M
+Date of Service: 09/20/2026
+Document Type: Operative Note
+Author: Dr. Hannah Weiss, Vascular Surgery
+------------------------------------------------------------
+Left carotid endarterectomy with patch angioplasty.  80% heterogeneous plaque
+removed.  Uncomplicated.  Neurologically intact post-op.
+
+==================== SCANNED DOCUMENT ====================
+Patient: Gonzalez, Maria
+MRN#: 12345
+DOB: 03/14/1958
+Sex: F
+Date of Service: 2026-05-04
+Document Type: Retinal Exam
+Author: Dr. Leo Martin, Ophthalmology
+------------------------------------------------------------
+Dilated fundus examination.  Moderate non-proliferative diabetic retinopathy
+in both eyes with scattered microaneurysms and dot-blot hemorrhages.  No
+macular edema on OCT.  Repeat exam in 6 months.

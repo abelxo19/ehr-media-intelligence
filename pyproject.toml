@@ -1,0 +1,18 @@
+[project]
+name = "ehr-media-intelligence"
+version = "1.0.0"
+description = "Ingest messy EHR exports, normalize to HL7 FHIR R4, summarize with Claude and search semantically."
+requires-python = ">=3.11"
+readme = "README.md"
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+addopts = "-ra"
+filterwarnings = [
+    "ignore::DeprecationWarning",
+    "ignore::FutureWarning",
+]
+
+[tool.ruff]
+line-length = 120
+target-version = "py311"

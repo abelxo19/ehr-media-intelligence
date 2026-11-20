@@ -1,0 +1,22 @@
+# Python
+__pycache__/
+*.py[cod]
+.venv/
+.pytest_cache/
+.ruff_cache/
+
+# Generated at runtime (rebuilt by `python -m app.pipeline`)
+var/
+
+# Secrets
+.env
+
+# Node (only used to compile Tailwind; compiled CSS is committed)
+node_modules/
+
+# OS / editor
+.DS_Store
+Thumbs.db
+.vscode/
+.idea/
+.claude/
