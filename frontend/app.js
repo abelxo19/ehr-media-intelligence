@@ -62,11 +62,11 @@
   };
 
   const TYPE_BADGE = {
-    DiagnosticReport: { label: "DiagnosticReport", cls: "bg-sky-50 text-sky-700 ring-sky-200" },
-    DocumentReference: { label: "DocumentReference", cls: "bg-violet-50 text-violet-700 ring-violet-200" },
+    DiagnosticReport: { label: "DiagnosticReport", cls: "bg-white text-slate-700 ring-slate-300" },
+    DocumentReference: { label: "DocumentReference", cls: "bg-slate-100 text-slate-700 ring-slate-200" },
     Patient: { label: "AI summary", cls: "bg-brand-50 text-brand-700 ring-brand-100" },
     Encounter: { label: "Encounter", cls: "bg-slate-50 text-slate-600 ring-slate-200" },
-    Observation: { label: "Observation", cls: "bg-amber-50 text-amber-700 ring-amber-200" },
+    Observation: { label: "Observation", cls: "bg-slate-50 text-slate-500 ring-slate-200" },
   };
   const badge = (type) => {
     const b = TYPE_BADGE[type] || { label: type, cls: "bg-slate-50 text-slate-600 ring-slate-200" };
@@ -157,7 +157,7 @@
             aria-label="${escapeHtml(p.display_name)}, MRN ${escapeHtml(p.mrn)}, ${p.record_count} records. Press Enter for details.">
         <div class="flex items-start justify-between gap-2">
           <p class="font-semibold text-slate-900">${escapeHtml(p.display_name)}</p>
-          ${p.flags.length ? `<span class="rounded-md bg-amber-50 px-2 py-0.5 text-xs font-medium text-amber-800 ring-1 ring-inset ring-amber-200" title="${escapeHtml(p.flags.join(", "))}">Review ID</span>` : ""}
+          ${p.flags.length ? `<span class="rounded-md bg-red-50 px-2 py-0.5 text-xs font-medium text-red-700 ring-1 ring-inset ring-red-200" title="${escapeHtml(p.flags.join(", "))}">Review ID</span>` : ""}
         </div>
         <p class="mt-1 font-mono text-xs text-slate-500">MRN ${escapeHtml(p.mrn)}</p>
         <p class="mt-2 text-sm text-slate-600">${p.birth_date ? `${ageFrom(p.birth_date)} y` : "Age unknown"} · ${escapeHtml(p.gender)} · ${p.record_count} records</p>
@@ -199,7 +199,7 @@
     } catch (err) {
       if (err.name === "AbortError") return;
       els.status.textContent = "Search failed";
-      renderMessage("Search failed", escapeHtml(err.message), "error");
+      renderMessage("Search failed", `${escapeHtml(err.message)}. Your query and filters are kept; press Enter to try again.`, "error");
     } finally {
       setBusy(false);
     }
@@ -234,7 +234,7 @@
 
   function renderSummary(s) {
     if (!s) return section("AI clinical summary", `<p class="text-sm text-slate-500">No summary generated yet.</p>`);
-    const conf = { high: "bg-emerald-50 text-emerald-700 ring-emerald-200", medium: "bg-amber-50 text-amber-800 ring-amber-200", low: "bg-red-50 text-red-700 ring-red-200" }[s.confidence];
+    const conf = { high: "bg-brand-50 text-brand-700 ring-brand-100", medium: "bg-white text-slate-700 ring-slate-300", low: "bg-red-50 text-red-700 ring-red-200" }[s.confidence];
     return section("AI clinical summary", `
       <div class="rounded-xl border border-brand-100 bg-brand-50/40 p-4">
         <div class="mb-3 flex flex-wrap items-center gap-2 text-xs">
@@ -252,7 +252,7 @@
             <li class="flex gap-2 text-red-800"><span aria-hidden="true">&#9888;</span><span>${escapeHtml(a.finding)}${a.record_id ? ` <span class="text-xs text-red-600/80">(${escapeHtml(a.record_id)})</span>` : ""}</span></li>`).join("") || "<li class='text-slate-500'>None</li>"}</ul></dd></div>
           <div><dt class="font-semibold text-slate-900">Narrative</dt><dd class="mt-0.5 text-slate-700">${escapeHtml(s.narrative)}</dd></div>
         </dl>
-        ${s.grounding.ungrounded.length ? `<p class="mt-3 text-xs text-amber-800">Not verified against source: ${s.grounding.ungrounded.map(escapeHtml).join("; ")}</p>` : ""}
+        ${s.grounding.ungrounded.length ? `<p class="mt-3 text-xs text-red-700">Not verified against source: ${s.grounding.ungrounded.map(escapeHtml).join("; ")}</p>` : ""}
         <p class="mt-4 rounded-lg bg-white px-3 py-2 text-xs text-slate-600 ring-1 ring-inset ring-slate-200" role="note"><strong>Disclaimer:</strong> ${escapeHtml(s.disclaimer)}</p>
       </div>`);
   }
@@ -264,7 +264,7 @@
       <details class="mb-2 rounded-lg border border-slate-200" ${type === "DocumentReference" || type === "DiagnosticReport" ? "open" : ""}>
         <summary class="cursor-pointer select-none px-3 py-2 text-sm font-medium text-slate-800">${badge(type)} <span class="ml-1 text-slate-500">${list.length}</span></summary>
         <ul class="divide-y divide-slate-100 border-t border-slate-100">${list.map((r) => `
-          <li class="px-3 py-2 ${r.id === highlightId ? "bg-amber-50" : ""}">
+          <li class="px-3 py-2 ${r.id === highlightId ? "bg-brand-50" : ""}">
             <div class="flex items-start justify-between gap-2">
               <div class="min-w-0 text-sm"><p class="text-slate-800">${escapeHtml(r.title || r.resource_type)}</p>
                 <p class="text-xs text-slate-500">${escapeHtml(fmtDate(r.date))}${r.status ? ` · ${escapeHtml(r.status)}` : ""} · <span class="font-mono">${escapeHtml(r.id.slice(0, 8))}</span></p></div>
@@ -287,11 +287,11 @@
 
       // highlight the resource the user clicked on
       const highlightRes = recordId ? data.resources.find((r) => r.id === recordId) : null;
-      const flags = p.flags.length ? `<div class="mb-4 rounded-lg border border-amber-200 bg-amber-50 px-3 py-2 text-sm text-amber-900" role="note">
+      const flags = p.flags.length ? `<div class="mb-4 rounded-lg border border-red-200 bg-red-50 px-3 py-2 text-sm text-red-800" role="note">
           <strong>Identity review needed:</strong> ${p.flags.map((f) => escapeHtml(f.replace(/_/g, " "))).join(", ")}.
           ${p.alternate_mrns.length ? `Alternate MRN(s): <span class="font-mono">${p.alternate_mrns.map(escapeHtml).join(", ")}</span>.` : ""}</div>` : "";
       const v = data.validation;
-      const validation = `<p class="text-sm ${v.valid ? "text-emerald-700" : "text-red-700"}">${v.valid ? "&#10003; Bundle valid" : "&#10007; Bundle has errors"} against FHIR R4 schema and reference checks
+      const validation = `<p class="text-sm ${v.valid ? "text-brand-700" : "text-red-700"}">${v.valid ? "&#10003; Bundle valid" : "&#10007; Bundle has errors"} against FHIR R4 schema and reference checks
         · ${v.issues.filter((i) => i.severity === "error").length} errors, ${v.issues.filter((i) => i.severity === "warning").length} warnings</p>
         <a class="mt-1 inline-block text-sm font-medium text-brand-700 underline" href="/patients/${encodeURIComponent(patientId)}/bundle" target="_blank" rel="noopener">Open FHIR Bundle JSON</a>`;
       els.drawerBody.innerHTML = flags + renderSummary(data.summary) + renderResources(data.resources, patientId, highlightRes && highlightRes.id) + section("Validation", validation);
@@ -395,12 +395,12 @@
       patientsCache = patients;
       const gen = health.last_run?.summaries?.generator || "";
       els.pill.textContent = `${health.patients} patients · ${health.indexed_documents} indexed · ${gen.startsWith("claude") ? "Claude summaries" : "offline summaries"}`;
-      els.pill.className = "rounded-full bg-emerald-50 px-3 py-1 text-emerald-700";
+      els.pill.className = "rounded-full bg-brand-50 px-3 py-1 text-brand-700";
       renderPatientGrid(patients);
     } catch (err) {
       els.pill.textContent = "API unavailable";
       els.pill.className = "rounded-full bg-red-50 px-3 py-1 text-red-700";
-      renderMessage("Cannot reach the API", escapeHtml(err.message), "error");
+      renderMessage("Cannot reach the API", `${escapeHtml(err.message)}. Start it with <code>uvicorn app.api.main:app</code>, then reload this page.`, "error");
     }
   }
   init();

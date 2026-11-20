@@ -1,8 +1,8 @@
 # EHR Media Intelligence Platform
 
-I built a pipeline and web app that take messy, heterogeneous EHR exports (a JSON EHR extract, a CSV of lab results and OCR'd scanned notes), clean them, map them to **HL7 FHIR R4**, generate **AI clinical summaries** with Claude, and let a clinician find the right record in seconds with **semantic search**.
+Clinicians lose a lot of time digging through lab results, imaging reports and scanned notes to find one thing. I built a pipeline and a small web app to help with that. It takes messy EHR exports (a JSON extract, a CSV of lab results and OCR'd scanned notes), cleans them up, maps them to **HL7 FHIR R4**, writes a short **AI clinical summary** for each patient with Claude, and lets you find the right record in seconds with **semantic search**.
 
-All data in this repository is **synthetic**. I hand-wrote it and then deliberately broke it in realistic ways (see [Sample data](#sample-data)). There is no real patient data anywhere in the repo.
+Everything in here is **synthetic**. I wrote the patients by hand, then broke the data on purpose in the ways real exports tend to be broken (see [Sample data](#sample-data)). There's no real patient data anywhere in the repo.
 
 ![Search results](docs/search.jpg)
 ![Patient drawer](docs/patient-drawer.jpg)
@@ -25,7 +25,7 @@ Optional, to use Claude for summaries: copy `.env.example` to `.env` and set `AN
 python -m app.pipeline
 ```
 
-That builds everything: it ingests, cleans, maps to FHIR, validates, stores, summarizes and indexes. The first run downloads `all-MiniLM-L6-v2` (~90 MB).
+That one command does the whole build: ingest, clean, map to FHIR, validate, store, summarize and index. The first run downloads `all-MiniLM-L6-v2` (~90 MB), so give it a minute.
 
 ```powershell
 uvicorn app.api.main:app --port 8000
@@ -37,7 +37,7 @@ Then open <http://127.0.0.1:8000> for the UI and <http://127.0.0.1:8000/docs> fo
 pytest
 ```
 
-That runs all 151 tests, about 40 s. The end-to-end tests use the real embedding model.
+That runs all 152 tests in about 40 s. The end-to-end tests use the real embedding model.
 
 Useful pipeline options:
 
@@ -126,7 +126,7 @@ tests/                      pytest suite
 
 * **Claude Sonnet 5.5** (`claude-sonnet-5-5`, set with `CLAUDE_MODEL`) via the official `anthropic` SDK with **structured output** (`output_config.format` JSON schema), so the response is always parseable. Effort is `low` because this is extraction, not reasoning-heavy. Server-side refusal fallback is enabled.
 * **Fields:** chief concern, key diagnoses, recent media records (date, type, finding, **record id**), flagged anomalies (with record id), narrative, plus `confidence`, `disclaimer`, `word_count`, `grounding`, `generator`, `prompt_version`.
-* **Prompt engineering** (`prompt.py`): the Bundle is rendered as compact text with record ids, labs folded into their report with `** HIGH **` markers, and newest first. The rules are: only facts in the records, keep the source's uncertainty, quote numbers exactly, cite record ids, stay under 200 words, and make no own recommendations.
+* **Prompt engineering** (`prompt.py`): the Bundle is rendered as compact text with record ids, labs folded into their report with plain-text flags ("6.3 mmol/L, critical high"), and newest first. The rules are: only facts in the records, keep the source's uncertainty, quote numbers exactly, cite record ids, stay under 200 words, and make no own recommendations.
 * **Quality guards** (`summarizer.py`): after every generation I count words and run a **grounding check**. Every number in a claim must appear in the source, most content words must appear, and every cited record id must exist. If anything fails, I re-prompt **once** with the specific problem. If the summary is still too long, I trim list items. Confidence is computed from these checks rather than self-reported by the model.
 * **Cache:** SQLite, keyed by `sha256(patient_id + bundle content hash + prompt version + generator)`. Re-runs make zero API calls, and changing any record or the prompt invalidates exactly the affected patients.
 * **Disclaimer** on every summary, shown prominently in the UI.
@@ -190,7 +190,7 @@ There are 12 fictional patients and 56 clean records after processing, from 23 p
 
 ## Testing
 
-`pytest` runs **151 tests**:
+`pytest` runs **152 tests**:
 
 | File | Covers |
 |---|---|
@@ -199,11 +199,11 @@ There are 12 fictional patients and 56 clean records after processing, from 23 p
 | `test_fhir.py` | resource content, reference integrity, determinism, validator catching bad data, report, store |
 | `test_summarizer.py` | schema, disclaimer, 200-word guard, hallucination/number/citation detection, paraphrase false positives, retry, cache, fallback, Claude request shape and error handling (mocked), and the committed real Claude summaries |
 | `test_api.py` | search ranking, filters, validation errors, all endpoints, **real-model relevance** and **< 2 s latency** |
-| `test_frontend.py` | UI served, labels/ARIA landmarks present, JS wired to the API |
+| `test_frontend.py` | UI served, labels/ARIA landmarks present, JS wired to the API, and the 3-color palette rule |
 
-Every commit's own test suite passes on its own.
+Each commit passes its own tests, so you can check out any task and run `pytest` there.
 
-I also tested the UI by hand in a browser, against the real model and data:
+I also clicked through the UI myself, against the real model and data, and checked:
 
 * typing search and highlighting
 * resource-type and date filters (results respected both)
@@ -224,6 +224,8 @@ I also tested the UI by hand in a browser, against the real model and data:
 
 ## Design decisions and tradeoffs
 
+A few choices I made on purpose, and why:
+
 * **Rule-based cleaning, not ML.** It is predictable and auditable; every change is explainable in the audit log, which matters more than cleverness for clinical data.
 * **Conservative identity matching.** I link, flag and keep alternate identifiers instead of auto-merging. A false merge in an EHR is far worse than a duplicate.
 * **FHIR built as plain dicts, validated after.** What gets stored is exactly what was validated, and building is decoupled from the library's object model.
@@ -231,6 +233,32 @@ I also tested the UI by hand in a browser, against the real model and data:
 * **Flat FAISS index + exact search.** At hundreds of vectors this is sub-millisecond and exact, and it lets filters apply before ranking. At 100k+ records I'd move to IVF/HNSW with pre-filtering or a vector DB.
 * **Offline fallback summarizer.** The demo, the tests and outages never depend on an external API, and summaries keep the same schema. It's clearly labelled `rule-based`, so nobody mistakes it for an LLM summary.
 * **Tailwind compiled once and committed.** It's production CSS with no Play CDN, and reviewers don't need Node.
+
+### UI design
+
+I kept the interface quiet on purpose. A clinician should see the answer, not the app.
+
+* **Three-color rule.** The whole UI uses three hues:
+  * **slate** for structure and text;
+  * **teal** for actions, highlights and good states;
+  * **red** only for things that need clinical attention: flagged results, identity conflicts, errors.
+
+  If something is red, it matters. A test fails if any other color slips in (`test_ui_uses_three_colour_palette`).
+* **Minimal by default.** Result cards show only what you need to decide whether to open a record. Everything else is one click away in the patient drawer, and raw FHIR JSON only appears when you ask for it. There are no decorative images or extra panels.
+* **Nielsen's 10 usability heuristics.** I used them as a checklist while building:
+
+| Heuristic | How the UI handles it |
+|---|---|
+| 1. Visibility of system status | Status pill (patients indexed, summarizer in use), "Searching…", skeleton loaders, result count and response time |
+| 2. Match with the real world | Clinical language throughout: MRN, record types like "Discharge Summary", readable dates and ages |
+| 3. User control and freedom | <kbd>Esc</kbd> closes the drawer and returns focus; "Clear filters" everywhere, including from the empty state |
+| 4. Consistency and standards | Every result card has the same layout and badge style; native selects and date pickers |
+| 5. Error prevention | An invalid date range is caught before any request is sent; search waits for 2+ characters and debounces typing |
+| 6. Recognition rather than recall | Example queries, always-visible filter labels, keyboard hints under the search box, a patient list when idle |
+| 7. Flexibility and efficiency | Search-as-you-type for everyone; <kbd>/</kbd>, <kbd>↑</kbd><kbd>↓</kbd>, <kbd>Enter</kbd> and <kbd>Esc</kbd> for power users |
+| 8. Aesthetic and minimalist design | The three-color palette, generous whitespace, details on demand |
+| 9. Recognize, diagnose, recover from errors | Plain-language empty and error messages that say what to do next, with a one-click fix where possible |
+| 10. Help and documentation | Inline keyboard hints, links to the API docs and validation report, and a disclaimer on every AI summary |
 
 See [WRITEUP.md](WRITEUP.md) ([PDF](docs/WRITEUP.pdf)) for the one-page write-up (tradeoffs, improvements, FHIR/clinical research, and AI quality validation). Every claim in it points to a test or file; the per-patient summary review behind it is in [docs/summary_review.md](docs/summary_review.md) (regenerate with `python scripts/review_summaries.py`). Rebuild the PDF with `python scripts/build_writeup_pdf.py`.
 

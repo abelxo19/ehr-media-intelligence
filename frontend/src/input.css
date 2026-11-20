@@ -21,5 +21,5 @@
 
 @layer components {
   .skeleton { @apply animate-pulse rounded bg-slate-200; }
-  mark { @apply rounded bg-amber-100 px-0.5 text-inherit; }
+  mark { @apply rounded bg-brand-100 px-0.5 text-inherit; }
 }

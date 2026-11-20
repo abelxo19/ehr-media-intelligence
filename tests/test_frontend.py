@@ -34,3 +34,14 @@ def test_js_calls_documented_endpoints():
     for endpoint in ("/search?", "/patients/", "/health", "/bundle", "/resources/"):
         assert endpoint in js
     assert 'method: "POST"' in js and "AbortController" in js
+
+
+def test_ui_uses_three_colour_palette():
+    """Design rule from the README: slate (neutral), brand teal (actions / good states) and red
+    (needs attention) are the only hues in the UI."""
+    tailwind_hues = {"slate", "gray", "zinc", "neutral", "stone", "red", "orange", "amber", "yellow", "lime",
+                     "green", "emerald", "teal", "cyan", "sky", "blue", "indigo", "violet", "purple", "fuchsia",
+                     "pink", "rose", "brand"}
+    source = "".join((FRONTEND_DIR / f).read_text(encoding="utf-8") for f in ("index.html", "app.js", "src/input.css"))
+    used = {h for h in re.findall(r"-([a-z]+)-\d{2,3}\b", source) if h in tailwind_hues}
+    assert used == {"slate", "brand", "red"}, used
