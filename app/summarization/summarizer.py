@@ -373,7 +373,8 @@ class SummaryService:
         self.fallback = fallback if fallback is not None else (
             RuleBasedSummarizer() if not isinstance(summarizer, RuleBasedSummarizer) else None)
         self.today = today
-        self.stats = {"cache_hits": 0, "generated": 0, "fallbacks": 0, "retries": 0}
+        self.stats: dict[str, Any] = {"cache_hits": 0, "generated": 0, "fallbacks": 0, "retries": 0,
+                                      "by_generator": {}, "last_error": None}
 
     @staticmethod
     def cache_key(patient_id: str, content_hash: str, generator: str) -> str:
@@ -385,7 +386,7 @@ class SummaryService:
         key = self.cache_key(patient_id, content_hash, self.summarizer.name)
         if not force and (cached := self.store.get_summary(key)):
             self.stats["cache_hits"] += 1
-            return ClinicalSummary.model_validate(cached)
+            return self._count(ClinicalSummary.model_validate(cached))
 
         rendered, record_ids = render_bundle(bundle, today=self.today)
         try:
@@ -397,12 +398,18 @@ class SummaryService:
             log.warning("Summarizer %s failed for %s (%s); using %s", self.summarizer.name, patient_id, exc,
                         self.fallback.name)
             self.stats["fallbacks"] += 1
+            self.stats["last_error"] = str(exc)
             summary = self._generate(self.fallback, patient_id, bundle, rendered, record_ids, content_hash)
             used = self.fallback
             # Don't cache a fallback under the primary key - the next run should retry the LLM.
             key = self.cache_key(patient_id, content_hash, used.name)
         self.store.put_summary(key, patient_id, content_hash, used.name, summary.model_dump())
         self.stats["generated"] += 1
+        return self._count(summary)
+
+    def _count(self, summary: ClinicalSummary) -> ClinicalSummary:
+        by_gen = self.stats["by_generator"]
+        by_gen[summary.generator] = by_gen.get(summary.generator, 0) + 1
         return summary
 
     def _generate(self, summarizer: Summarizer, patient_id: str, bundle: dict[str, Any], rendered: str,

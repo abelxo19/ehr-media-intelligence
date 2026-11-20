@@ -132,6 +132,8 @@ def test_llm_failure_falls_back_to_rule_based(bundle, store):
     service = SummaryService(store, FakeSummarizer(SummaryError("API down")))
     summary = service.summarize(PID, bundle, "h")
     assert summary.generator == RuleBasedSummarizer.name and service.stats["fallbacks"] == 1
+    assert service.stats["by_generator"] == {RuleBasedSummarizer.name: 1}
+    assert service.stats["last_error"] == "API down"
     # The fallback is not cached under the LLM's key, so the next run retries the LLM.
     fake = FakeSummarizer(GOOD)
     SummaryService(store, fake).summarize(PID, bundle, "h")

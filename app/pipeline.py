@@ -124,7 +124,11 @@ def run_pipeline(settings: Settings | None = None, *, embedder: Embedder | None 
         "ingestion": dataset.stats,
         "fhir": {k: report[k] for k in ("bundles", "valid_bundles", "total_errors", "total_warnings",
                                         "resource_totals")},
-        "summaries": service.stats | {"generator": service.summarizer.name},
+        "summaries": service.stats | {
+            "configured_generator": service.summarizer.name,
+            # The generator that actually produced most summaries (differs if the LLM failed).
+            "generator": max(service.stats["by_generator"], key=service.stats["by_generator"].get, default=None),
+        },
         "index": {"documents": index.size, "chunks": len(index.chunks), "embedder": embedder.name},
         "reports": {"audit_log": str(audit_path), "validation_json": str(report_json),
                     "validation_md": str(report_md)},
