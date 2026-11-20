@@ -37,7 +37,7 @@ Then open <http://127.0.0.1:8000> for the UI and <http://127.0.0.1:8000/docs> fo
 pytest
 ```
 
-That runs all 152 tests in about 40 s. The end-to-end tests use the real embedding model.
+That runs all 157 tests in about 40 s. The end-to-end tests use the real embedding model.
 
 Useful pipeline options:
 
@@ -103,7 +103,7 @@ tests/                      pytest suite
 | Missing fields | Missing record date → filled from the encounter (audited). Missing doc type → inferred from text. Missing gender → filled from another source, else `unknown`. Missing MRN → matched on name + DOB. Empty notes → dropped (audited). |
 | Inconsistent dates | 16 formats (`03/14/1958`, `21-Jul-1985`, `March 2, 2026`, `2026/02/10 06:15`, ISO…). Ambiguous `04/05/2026` is read as US and audited, `25/12/2025` is swapped and flagged, and future or pre-1900 dates are cleared and flagged. |
 | Duplicates | Repeat patient exports merged; duplicate documents removed by id **or** content hash; duplicate lab rows removed. |
-| Conflicting identifiers | Same MRN + different DOB → `identifier_conflict`. Different MRN + same name/DOB (the sample has a transposition typo) → linked as an **alternate** MRN and flagged `possible_duplicate_mrn`. I deliberately do not silently merge, because in a real EHR that goes to HIM review. |
+| Conflicting identifiers | Same MRN + different DOB → `identifier_conflict`. Different MRN + same name/DOB (the sample has a transposition typo) → linked as an **alternate** MRN and flagged `possible_duplicate_mrn`. Both MRNs' records end up in one patient history, so the link is never silent: it is flagged for HIM review, and the alternate MRN stays visible. |
 | Canonical demographics | MRN → 7-digit zero-padded; gender → FHIR AdministrativeGender; names → given/family, re-cased (`GONZALEZ, MARIA` → Maria Gonzalez); DOB → ISO date. |
 | Validated IR + audit log | Pydantic v2 models (`Patient`, `Encounter`, `ClinicalRecord`, `LabResult`). **Every patient and record carries its own `audit` list** (`field`, `action`, `before`, `after`, `reason`, `source` with the file and line/path). Dataset-level events are kept too, and everything is written to `var/reports/audit_log.json`. |
 | ≥ 3 unit-tested edge cases | `tests/test_cleaning.py` + `tests/test_ingestion.py`: 66 tests. |
@@ -127,10 +127,10 @@ tests/                      pytest suite
 * **Claude Sonnet 5.5** (`claude-sonnet-5-5`, set with `CLAUDE_MODEL`) via the official `anthropic` SDK with **structured output** (`output_config.format` JSON schema), so the response is always parseable. Effort is `low` because this is extraction, not reasoning-heavy. Server-side refusal fallback is enabled.
 * **Fields:** chief concern, key diagnoses, recent media records (date, type, finding, **record id**), flagged anomalies (with record id), narrative, plus `confidence`, `disclaimer`, `word_count`, `grounding`, `generator`, `prompt_version`.
 * **Prompt engineering** (`prompt.py`): the Bundle is rendered as compact text with record ids, labs folded into their report with plain-text flags ("6.3 mmol/L, critical high"), and newest first. The rules are: only facts in the records, keep the source's uncertainty, quote numbers exactly, cite record ids, stay under 200 words, and make no own recommendations.
-* **Quality guards** (`summarizer.py`): after every generation I count words and run a **grounding check**. Every number in a claim must appear in the source, most content words must appear, and every cited record id must exist. If anything fails, I re-prompt **once** with the specific problem. If the summary is still too long, I trim list items. Confidence is computed from these checks rather than self-reported by the model.
+* **Quality guards** (`summarizer.py`): after every generation I run a **grounding check** on **every field**, including the chief concern and each narrative sentence. Every number must appear in the source as a whole value (so `6.3` doesn't match inside `16.3`), most content words must appear, and every cited record id must exist. If anything fails, I re-prompt **once** with the specific problem. A final trim then guarantees the 200-word limit across all fields. Confidence comes from these checks, not from the model.
 * **Cache:** SQLite, keyed by `sha256(patient_id + bundle content hash + prompt version + generator)`. Re-runs make zero API calls, and changing any record or the prompt invalidates exactly the affected patients.
 * **Disclaimer** on every summary, shown prominently in the UI.
-* **Real output:** I ran Claude Sonnet 5.5 on all 12 patients and reviewed every summary against its source. The summaries are committed in [docs/claude_summaries.json](docs/claude_summaries.json), and the review (per-patient verdicts, and how three runs tightened the prompt and checker from 11 retries to 2) is in [docs/summary_review.md](docs/summary_review.md). Each summary records why its first draft was rejected (`retry_reason`), if it was.
+* **Real output:** I ran Claude Sonnet 5.5 on all 12 patients and reviewed every summary against its source. The summaries are committed in [docs/claude_summaries.json](docs/claude_summaries.json), and the review (per-patient verdicts, and how five runs tightened the prompt and checker from 11 retries to 1) is in [docs/summary_review.md](docs/summary_review.md). Each summary records why its first draft was rejected (`retry_reason`), if it was.
 * **Fallback:** if the API fails (no key, rate limit, outage, refusal) that patient gets a deterministic rule-based summary in the same schema. It is **not** cached under the Claude key, so the next run retries Claude.
 
 ### Task 4: Semantic search
@@ -190,7 +190,7 @@ There are 12 fictional patients and 56 clean records after processing, from 23 p
 
 ## Testing
 
-`pytest` runs **152 tests**:
+`pytest` runs **157 tests**:
 
 | File | Covers |
 |---|---|
@@ -227,7 +227,7 @@ I also clicked through the UI myself, against the real model and data, and check
 A few choices I made on purpose, and why:
 
 * **Rule-based cleaning, not ML.** It is predictable and auditable; every change is explainable in the audit log, which matters more than cleverness for clinical data.
-* **Conservative identity matching.** I link, flag and keep alternate identifiers instead of auto-merging. A false merge in an EHR is far worse than a duplicate.
+* **Link and flag, never silently.** When a second MRN matches a patient on name and DOB, its records join that patient, but the second MRN is kept as an alternate identifier and the patient is flagged for HIM review. A wrong link should be visible to a reviewer, not buried.
 * **FHIR built as plain dicts, validated after.** What gets stored is exactly what was validated, and building is decoupled from the library's object model.
 * **One Bundle per patient, type `collection`, `urn:uuid` references.** These are self-contained and resolvable without a server. A `transaction` Bundle would be the next step for loading into a FHIR server.
 * **Flat FAISS index + exact search.** At hundreds of vectors this is sub-millisecond and exact, and it lets filters apply before ranking. At 100k+ records I'd move to IVF/HNSW with pre-filtering or a vector DB.

@@ -6,62 +6,59 @@ Word limit: 200.
 
 ## Claude summaries (shipped): `claude:claude-sonnet-5-5`
 
-Stored verbatim in `docs/claude_summaries.json` (prompt `2026-11-v5`). Words 81-178. No invented values, dates or plans found; issues are listed as *minor*.
+Stored verbatim in `docs/claude_summaries.json` (prompt `2026-11-v7`). Words 84-168. No invented values, dates or plans found; issues are listed as *minor*.
 
 | Patient | Words | Dx | Grounding | Invalid ids | Retried | Verdict | Reviewer note |
 |---|---|---|---|---|---|---|---|
-| Maria Gonzalez (`pt-0012345`) | 170 | 6 | 100% | 0 | yes | ok | All values match (glucose 412, creatinine 2.4 to 1.7, eGFR 27, A1c 10.8, UACR 480); 6 diagnoses, 5 anomalies, both at the limit. |
-| James Okafor (`pt-0023456`) | 178 | 4 | 100% | 0 | no | minor | Facts correct (troponin 88 to 240, LAD 90%, LVEF 45%). "Reduced LVEF 45%" is a finding listed as a diagnosis; "DAPT for 12 months" is a plan listed as an anomaly. |
-| Linda Chen (`pt-0034567`) | 132 | 2 | 100% | 0 | no | minor | Says eosinophils 8.5% "on both dates"; the pulmonology note most likely restates the same CBC value, so this over-reads the record. Everything else correct. |
-| Robert Williams (`pt-0045678`) | 168 | 5 | 100% | 0 | no | minor | Correct, including LVEF 25% then 30% and NYHA II; duplicate MRN cited as PATIENT. "Pulmonary edema" (a CXR finding) listed as a diagnosis. |
-| Aisha Rahman (`pt-0056789`) | 87 | 2 | 100% | 0 | no | ok | Correct; normal MRI not flagged as an anomaly. |
-| David Kowalski (`pt-0067890`) | 153 | 3 | 100% | 0 | no | ok | Chief concern is the PET-avid lung malignancy (the offline summary wrongly led with COPD); nodule growth 9 to 13 mm and SUV values exact. |
-| Emily Johnson (`pt-0078901`) | 81 | 1 | 100% | 0 | no | ok | Correct; age 24 matches DOB. |
-| Samuel Adeyemi (`pt-0089012`) | 153 | 2 | 100% | 0 | no | ok | Uses the source's terms ("potassium 6.3 mmol/L (critical high)"), no relabelling; notes the ED repeat potassium is missing. |
-| Grace Park (`pt-0099012`) | 173 | 2 | 100% | 0 | no | ok | Receptor status, grade, Ki-67, BI-RADS 4C and node findings exact. |
-| Thomas Muller (`pt-0101123`) | 174 | 5 | 100% | 0 | no | minor | Captures the carotid endarterectomy the offline summary missed; NIHSS 8 to 3 correct. "Right arm weakness" (a symptom) listed as a diagnosis. |
-| Patricia Brown (`pt-0112234`) | 139 | 4 | 100% | 0 | yes | ok | Doses and DEXA values exact; notes the TSH recheck is missing. |
-| Kevin Nguyen (`pt-0123345`) | 110 | 1 | 100% | 0 | no | ok | Correct; flags that the planned 2-week X-ray never appears in the records. |
+| Maria Gonzalez (`pt-0012345`) | 165 | 6 | 100% | 0 | no | fixed | Run 4 wrote "admitted 2026-02-14", which is the discharge-summary date. The prompt now shows each record's encounter span, and run 5 says "Admitted 2026-02-10 to 2026-02-14" (`test_render_includes_encounter_period`). Lab values and plans exact. |
+| James Okafor (`pt-0023456`) | 155 | 2 | 100% | 0 | no | minor | Facts correct (troponin 88 to 240, LAD 90%, LVEF 45%). "LDL still above goal" is an inference: the note gives LDL 112 but no goal. |
+| Linda Chen (`pt-0034567`) | 132 | 2 | 100% | 0 | no | minor | Correct; the earlier "on both dates" over-reading is gone. "Reactive airway disease" (a CXR impression) is listed as a diagnosis. |
+| Robert Williams (`pt-0045678`) | 162 | 5 | 100% | 0 | no | minor | Admission 2025-12-01 to 2025-12-06, LVEF 25% then 30% correct; duplicate MRN cited as PATIENT. "Pulmonary edema" (a CXR finding) is listed as a diagnosis. |
+| Aisha Rahman (`pt-0056789`) | 84 | 2 | 100% | 0 | no | ok | Correct; normal MRI not flagged as an anomaly. |
+| David Kowalski (`pt-0067890`) | 163 | 3 | 100% | 0 | no | ok | Chief concern is the PET-avid lung malignancy (the offline summary led with COPD); nodule growth 9 to 13 mm, SUV values and 30 pack-year history exact. |
+| Emily Johnson (`pt-0078901`) | 86 | 1 | 100% | 0 | no | ok | Correct; WBC 16.4 and neutrophils 86% flagged. |
+| Samuel Adeyemi (`pt-0089012`) | 146 | 2 | 100% | 0 | no | ok | Uses the source's terms ("potassium 6.3 mmol/L (critical high)"); notes the missing ED repeat potassium. |
+| Grace Park (`pt-0099012`) | 168 | 1 | 100% | 0 | no | ok | Receptor status, grade, Ki-67, BI-RADS 4C and node findings exact. |
+| Thomas Muller (`pt-0101123`) | 160 | 4 | 100% | 0 | no | minor | Endarterectomy and NIHSS 8 to 3 captured. "Expressive aphasia" (a symptom) is listed as a diagnosis. |
+| Patricia Brown (`pt-0112234`) | 142 | 4 | 100% | 0 | no | ok | Doses and DEXA values exact; notes the TSH recheck is missing. |
+| Kevin Nguyen (`pt-0123345`) | 110 | 1 | 92% | 0 | yes | minor | Correct, but the last narrative sentence ("...listed with reference ranges") says nothing. The checker flags it, so confidence is medium. |
 
 Retries in the shipped run (the checker rejected the first draft and the model rewrote it):
 
-- Maria Gonzalez: these items are not supported by the records: ['Latest eGFR 27 mL/min/1.73m2 and A1c 10.8 %; no newer values'].
-- Patricia Brown: these items are not supported by the records: ['25-hydroxyvitamin D 14 ng/mL low; no repeat level in records'].
-
-Both were checker false positives on absence statements ("; no newer values"). The checker now
-word-checks only the part before "; no ..." while still checking every number
-(`test_absence_clause_still_checks_numbers`).
+- Kevin Nguyen: these items are not supported by the records: ['Labs that day within reference ranges.'].
 
 ### How the prompt and checker got here
 
 | Run | Prompt | Retries | What I found | Change |
 |---|---|---|---|---|
-| 1 | v3 | 11 / 12 | No invented facts. Five correct paraphrases flagged ("elevated creatinine 1.9", "MRI planned; no result"). `** HIGH **` markers leaked into output. Lab values relabelled as diagnoses ("hyperkalemia"); smoking and family history listed as diagnoses. | Paraphrase words ignored by the checker (numbers still strict); plain-text lab flags; prompt rules 6-7 (source terms only, no markdown); diagnoses = conditions only. Tests: `test_faithful_paraphrase_is_not_flagged`. |
-| 2 | v4 | 2 / 12 | One more paraphrase ("HbA1c" vs "Hemoglobin A1c"). One real model error: cited `DATA-QUALITY FLAGS` as a record id; the retry fixed it. | Abbreviation map; patient-level flags get the citable id `PATIENT`. Test: `test_patient_level_flag_can_be_cited`. |
-| 3 | v5 | 2 / 12 | Shipped. Both retries were absence-statement false positives (above). | Absence-clause handling in the checker. |
+| 1 | v3 | 11 / 12 | No invented facts. Five correct paraphrases flagged ("elevated creatinine 1.9"). `** HIGH **` markers leaked into output; lab values relabelled as diagnoses ("hyperkalemia"). | Paraphrase words ignored by the checker (numbers still strict); plain-text lab flags; prompt rules 6-7. |
+| 2 | v4 | 2 / 12 | One real model error: cited `DATA-QUALITY FLAGS` as a record id (the retry fixed it). | Patient-level flags get the citable id `PATIENT`; abbreviation map. |
+| 3 | v5 | 2 / 12 | Both retries were absence statements ("; no newer values"). | Absence clauses are not word-checked (numbers still are). |
+| 4 | v6 | 2 / 12 | An external review showed `chief_concern` and `narrative` were never checked, `6.3` matched inside `16.3`, and a long chief concern could exceed 200 words. Once fixed, the checker caught two real narrative problems ("on both dates", advice to "need verification"). My read-through then found "admitted 2026-02-14" for a 2026-02-10 admission. | Every field checked; whole-number matching; strict length cap; prompt rule 8 (no inferences or advice in the narrative). |
+| 5 | v7 | 1 / 12 | Shipped. Admission dates now correct. | Each record header shows its encounter span. |
 
-Not caught automatically: mild over-reading ("on both dates") and findings or symptoms listed as
-diagnoses. The checker verifies facts against the source, not clinical judgement, so clinician review
-stays in the loop.
+Still not caught automatically: a real date attached to the wrong event (Maria, run 4), small
+inferences ("above goal"), and findings or symptoms listed as diagnoses. The checker verifies that
+values exist in the source, not that they are used correctly, so clinician review stays in the loop.
 
-## Offline fallback: `rule-based:v3`
+## Offline fallback: `rule-based:v4`
 
-Used when Claude is unavailable. Words 43-149.
+Used when Claude is unavailable. Words 32-137.
 
 | Patient | Words | Dx | Grounding | Invalid ids | Retried | Verdict | Reviewer note |
 |---|---|---|---|---|---|---|---|
-| Maria Gonzalez (`pt-0012345`) | 125 | 5 | 100% | 0 | n/a | ok | DM2 + CKD + AKI + retinopathy all present; eGFR 27 and HbA1c 10.8 flagged. |
-| James Okafor (`pt-0023456`) | 149 | 1 | 100% | 0 | n/a | fixed | Note said "52-year-old" but DOB gives 53 on 2026-05-18. Data corrected; guarded by `test_ages_stated_in_notes_match_date_of_birth`. |
-| Linda Chen (`pt-0034567`) | 66 | 1 | 100% | 0 | n/a | ok | Asthma exacerbation; eosinophils 8.5% flagged. |
-| Robert Williams (`pt-0045678`) | 128 | 2 | 100% | 0 | n/a | ok | HFrEF; duplicate-MRN identity flag listed first among anomalies. |
-| Aisha Rahman (`pt-0056789`) | 43 | 1 | 100% | 0 | n/a | ok | Short (single problem); normal MRI correctly not flagged. |
-| David Kowalski (`pt-0067890`) | 105 | 2 | 100% | 0 | n/a | limitation | Chief concern reads "COPD GOLD 2" although the dominant issue is the suspected lung malignancy (listed under media and anomalies). Rules can't rank priority. |
-| Emily Johnson (`pt-0078901`) | 76 | 1 | 100% | 0 | n/a | ok | Appendicitis; CT finding and WBC 16.4 / neutrophils 86% flagged. |
-| Samuel Adeyemi (`pt-0089012`) | 96 | 2 | 100% | 0 | n/a | ok | Critical K 6.3 listed first; renal artery stenosis captured. |
-| Grace Park (`pt-0099012`) | 129 | 1 | 100% | 0 | n/a | fixed | Mammogram finding was its first sentence, "Diagnostic mammogram, left breast." Now selects the BI-RADS 4C sentence; guarded by `test_mammogram_finding_uses_the_significant_sentence`. |
-| Thomas Muller (`pt-0101123`) | 137 | 2 | 100% | 0 | n/a | gap | Misses the carotid endarterectomy (operative note) and repeats "MRI Brain: MRI brain" in one anomaly. |
-| Patricia Brown (`pt-0112234`) | 100 | 3 | 100% | 0 | n/a | ok | Hypothyroidism, osteoporosis, vitamin D deficiency captured. |
-| Kevin Nguyen (`pt-0123345`) | 58 | 1 | 100% | 0 | n/a | ok | Scaphoid fracture; normal creatinine correctly not flagged. |
+| Maria Gonzalez (`pt-0012345`) | 114 | 5 | 100% | 0 | n/a | ok | DM2 + CKD + AKI + retinopathy all present; eGFR 27 and HbA1c 10.8 flagged. |
+| James Okafor (`pt-0023456`) | 137 | 1 | 100% | 0 | n/a | fixed | Note said "52-year-old" but DOB gives 53 on 2026-05-18. Data corrected; guarded by `test_ages_stated_in_notes_match_date_of_birth`. |
+| Linda Chen (`pt-0034567`) | 55 | 1 | 100% | 0 | n/a | ok | Asthma exacerbation; eosinophils 8.5% flagged. |
+| Robert Williams (`pt-0045678`) | 116 | 2 | 100% | 0 | n/a | ok | HFrEF; duplicate-MRN identity flag listed first among anomalies. |
+| Aisha Rahman (`pt-0056789`) | 32 | 1 | 100% | 0 | n/a | ok | Short (single problem); normal MRI correctly not flagged. |
+| David Kowalski (`pt-0067890`) | 93 | 2 | 100% | 0 | n/a | limitation | Chief concern reads "COPD GOLD 2" although the dominant issue is the suspected lung malignancy (listed under media and anomalies). Rules can't rank priority. |
+| Emily Johnson (`pt-0078901`) | 66 | 1 | 100% | 0 | n/a | ok | Appendicitis; CT finding and WBC 16.4 / neutrophils 86% flagged. |
+| Samuel Adeyemi (`pt-0089012`) | 86 | 2 | 100% | 0 | n/a | ok | Critical K 6.3 listed first; renal artery stenosis captured. |
+| Grace Park (`pt-0099012`) | 118 | 1 | 100% | 0 | n/a | fixed | Mammogram finding was its first sentence, "Diagnostic mammogram, left breast." Now selects the BI-RADS 4C sentence; guarded by `test_mammogram_finding_uses_the_significant_sentence`. |
+| Thomas Muller (`pt-0101123`) | 126 | 2 | 100% | 0 | n/a | gap | Misses the carotid endarterectomy (operative note) and repeats "MRI Brain: MRI brain" in one anomaly. |
+| Patricia Brown (`pt-0112234`) | 89 | 3 | 100% | 0 | n/a | ok | Hypothyroidism, osteoporosis, vitamin D deficiency captured. |
+| Kevin Nguyen (`pt-0123345`) | 48 | 1 | 100% | 0 | n/a | ok | Scaphoid fracture; normal creatinine correctly not flagged. |
 
 ## Earlier failed run
 

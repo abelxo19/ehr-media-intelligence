@@ -6,7 +6,7 @@ import base64
 from datetime import date
 from typing import Any
 
-PROMPT_VERSION = "2026-11-v5"
+PROMPT_VERSION = "2026-11-v7"
 MAX_SUMMARY_WORDS = 200
 PATIENT_ID = "PATIENT"  # citation id for patient-level data-quality flags
 
@@ -43,6 +43,7 @@ clinicians prefer fragments over full sentences.
 (write "potassium 6.3 mmol/L (critical high)", not "hyperkalemia", unless a note says so), \
 and do not call a finding persistent or worsening unless two dated results show it.
 7. Plain text only: no markdown, asterisks or bracketed flags in any field.
+8. chief_concern and narrative follow the same rules as every other field: restate documented facts only. No inferences ("status unknown"), no advice ("needs verification"), and no claims that a value repeated unless two dated results show it.
 """
 
 
@@ -91,7 +92,8 @@ def render_bundle(bundle: dict[str, Any], *, today: date | None = None) -> tuple
             body = _decode(res["content"][0]["attachment"])
             label = res["type"].get("text") or res["type"]["coding"][0]["display"]
             author = (res.get("author") or [{}])[0].get("display", "")
-            items.append((when, rid, f"[{rid}] {when or 'undated'} | NOTE: {label} | {author}\n{body}"))
+            enc = _encounter_label(by_url, ((res.get("context") or {}).get("encounter") or [{}])[0])
+            items.append((when, rid, f"[{rid}] {when or 'undated'} | NOTE: {label} | {author}{enc}\n{body}"))
         elif rtype == "DiagnosticReport":
             rid = res["identifier"][0]["value"]
             when = (res.get("effectiveDateTime") or "")[:10]
@@ -105,11 +107,25 @@ def render_bundle(bundle: dict[str, Any], *, today: date | None = None) -> tuple
                 body = "\n".join(values)
             else:
                 body = _decode(res["presentedForm"][0])
-            items.append((when, rid, f"[{rid}] {when or 'undated'} | {category.upper()}: {label}\n{body}"))
+            enc = _encounter_label(by_url, res.get("encounter") or {})
+            items.append((when, rid, f"[{rid}] {when or 'undated'} | {category.upper()}: {label}{enc}\n{body}"))
     items.sort(key=lambda x: x[0], reverse=True)
     lines += [text + "\n" for _, _, text in items]
     ids = [rid for _, rid, _ in items] + ([PATIENT_ID] if flags else [])
     return "\n".join(lines).strip(), ids
+
+
+def _encounter_label(by_url: dict[str, dict], ref: dict) -> str:
+    """' | inpatient encounter 2026-02-10 to 2026-02-14', so a note's own date (often the
+    discharge date) is never mistaken for the admission date."""
+    enc = by_url.get(ref.get("reference", ""))
+    if not enc:
+        return ""
+    period = enc.get("period") or {}
+    start, end = (period.get("start") or "")[:10], (period.get("end") or "")[:10]
+    span = f"{start} to {end}" if start and end and start != end else start
+    kind = enc["class"]["display"].removesuffix(" encounter")  # FHIR's IMP display is "inpatient encounter"
+    return f" | {kind} encounter {span}".rstrip()
 
 
 def _format_observation(obs: dict[str, Any]) -> str:

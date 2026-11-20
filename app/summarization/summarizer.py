@@ -227,7 +227,7 @@ def _key_sentence(text: str, max_words: int = 18) -> str:
 
 
 class RuleBasedSummarizer:
-    name = "rule-based:v3"
+    name = "rule-based:v4"
 
     def generate(self, rendered: str, bundle: dict[str, Any], feedback: str | None = None) -> SummaryContent:
         from app.summarization.prompt import _decode, _format_observation
@@ -282,9 +282,10 @@ class RuleBasedSummarizer:
         anomalies.sort(key=lambda a: not ("CRITICAL" in a.finding or a.finding.startswith("Data-quality")))
 
         name = patient["name"][0].get("text", "Patient")
-        narrative = (f"{name}: {len(docs)} clinical note(s) and {len(reports)} diagnostic report(s) on file. "
-                     f"Main problems: {', '.join(diagnoses[:3]) or 'not determined'}. "
-                     f"{len(anomalies)} item(s) flagged for review.")
+        # Only facts from the records (no counts), so the narrative passes the same grounding check.
+        narrative = f"{name}: {', '.join(diagnoses[:3]) or 'no coded problems'}."
+        if media:
+            narrative += f" Latest report: {media[0].type}, {media[0].date or 'undated'}."
         return SummaryContent(chief_concern=chief, key_diagnoses=diagnoses[:6], recent_media=media,
                               flagged_anomalies=anomalies[:5], narrative=narrative)
 
@@ -302,12 +303,20 @@ _STOP |= {"flagged", "elevated", "raised", "decreased", "reduced", "high", "crit
           "recommended", "follow-up", "later", "outcome", "consistent", "finding", "findings", "showed", "shows",
           "repeat", "after", "before", "since", "still", "about", "recent", "latest", "initial", "prior",
           "previous", "ordered", "available", "none", "without", "being", "added", "started", "stopped", "done",
-          "months", "weeks", "days", "year", "years", "old", "patient", "requested", "scheduled", "awaiting"}
+          "months", "weeks", "days", "year", "years", "old", "patient", "requested", "scheduled", "awaiting",
+          "report", "reports", "note", "notes"}
 _ABBREV = {"nstemi": "non-st", "ckd": "kidney", "copd": "copd", "aki": "kidney", "hfref": "heart failure",
            "dm": "diabetes", "t2dm": "diabetes", "htn": "hypertension", "ica": "carotid", "mca": "mca",
            "hba1c": "hemoglobin a1c", "a1c": "a1c", "bmp": "metabolic panel", "cbc": "blood count",
            "dexa": "dexa", "npdr": "retinopathy", "idc": "ductal carcinoma", "lvef": "lvef"}
 _NUMBER = re.compile(r"\d+(?:\.\d+)?")
+_THOUSANDS = re.compile(r"(?<=\d),(?=\d{3}\b)")
+_SENTENCE = re.compile(r"(?<=[.!?])\s+")
+
+
+def _numbers(text: str) -> set[float]:
+    """Whole numeric tokens by value: "16.3" yields 16.3 (never 6.3); "6,800" == "6800"; "1.0" == "1"."""
+    return {float(n) for n in _NUMBER.findall(_THOUSANDS.sub("", text))}
 
 
 def count_words(content: SummaryContent) -> int:
@@ -321,12 +330,11 @@ def _claim_grounded(claim: str, source: str) -> bool:
     """A claim is grounded if its numbers all appear in the source and most of its
     meaningful words (or their abbreviation expansions) do too."""
     src = source.lower()
-    for num in _NUMBER.findall(claim):
-        if num not in src:
-            return False
-    # "...; no newer values in records" states an absence, which word matching cannot verify,
-    # so only the positive part is word-checked (its numbers were already checked above).
-    positive = re.split(r";\s*no\b", claim, maxsplit=1, flags=re.I)[0]
+    if not _numbers(claim) <= _numbers(source):
+        return False
+    # "...; no newer values in records" or "No tissue diagnosis documented." state an absence, which
+    # word matching cannot verify, so only the positive part is word-checked (numbers were checked above).
+    positive = re.split(r"(?:^|;)\s*no\b", claim.strip(), maxsplit=1, flags=re.I)[0]
     words = [w for w in re.findall(r"[a-z][a-z0-9\-]{3,}", positive.lower()) if w not in _STOP]
     words += [w for w in re.findall(r"\b[a-z0-9]{2,6}\b", positive.lower()) if w in _ABBREV]
     if not words:
@@ -337,8 +345,11 @@ def _claim_grounded(claim: str, source: str) -> bool:
 
 def check_grounding(content: SummaryContent, source_text: str, record_ids: list[str]) -> GroundingReport:
     ids = set(record_ids)
-    claims = list(content.key_diagnoses) + [a.finding for a in content.flagged_anomalies
-                                            if not a.finding.startswith("Data-quality")]
+    # Every clinical field is checked: chief concern and narrative sentence by sentence, plus
+    # diagnoses, findings and anomalies. (Only the fallback's fixed data-quality notice is exempt.)
+    claims = [c for field in (content.chief_concern, content.narrative) for c in _SENTENCE.split(field.strip()) if c]
+    claims += list(content.key_diagnoses) + [a.finding for a in content.flagged_anomalies
+                                             if not a.finding.startswith("Data-quality")]
     claims += [m.finding for m in content.recent_media]
     ungrounded = [c for c in claims if not _claim_grounded(c, source_text)]
     cited = [m.record_id for m in content.recent_media] + [a.record_id for a in content.flagged_anomalies if a.record_id]
@@ -358,19 +369,28 @@ def _confidence(report: GroundingReport, word_count: int, retried: bool) -> Lite
 
 
 def _trim(content: SummaryContent) -> SummaryContent:
-    """Last-resort guard: drop trailing list items until the summary fits the word budget."""
+    """Last-resort guard that always ends at or under MAX_SUMMARY_WORDS: first drop trailing list
+    items, then shorten the free-text fields (narrative first), never removing a field entirely."""
     c = content.model_copy(deep=True)
-    while count_words(c) > MAX_SUMMARY_WORDS:
-        if len(c.recent_media) > 2:
-            c.recent_media.pop()
-        elif len(c.flagged_anomalies) > 2:
-            c.flagged_anomalies.pop()
-        elif len(c.key_diagnoses) > 3:
-            c.key_diagnoses.pop()
-        else:
-            words = c.narrative.split()
-            c.narrative = " ".join(words[: max(10, len(words) - (count_words(c) - MAX_SUMMARY_WORDS))])
-            break
+    for items, keep in ((c.recent_media, 2), (c.flagged_anomalies, 2), (c.key_diagnoses, 3)):
+        while count_words(c) > MAX_SUMMARY_WORDS and len(items) > keep:
+            items.pop()
+
+    def shorten(text: str, floor: int) -> str:
+        words = text.split()
+        excess = count_words(c) - MAX_SUMMARY_WORDS
+        return " ".join(words[: max(floor, len(words) - excess)]) if excess > 0 else text
+
+    for floor in (12, 1):  # a generous floor first, then whatever it takes
+        c.narrative = shorten(c.narrative, floor)
+        c.chief_concern = shorten(c.chief_concern, floor)
+        for m in c.recent_media:
+            m.finding = shorten(m.finding, floor)
+        for a in c.flagged_anomalies:
+            a.finding = shorten(a.finding, floor)
+        c.key_diagnoses = [shorten(d, floor) for d in c.key_diagnoses]
+    while count_words(c) > MAX_SUMMARY_WORDS and (c.recent_media or c.flagged_anomalies or len(c.key_diagnoses) > 1):
+        (c.recent_media or c.flagged_anomalies or c.key_diagnoses).pop()
     return c
 
 
@@ -453,7 +473,10 @@ class SummaryService:
             report = check_grounding(content, rendered, record_ids)
         if count_words(content) > MAX_SUMMARY_WORDS:
             content = _trim(content)
+            report = check_grounding(content, rendered, record_ids)
         words = count_words(content)
+        if words > MAX_SUMMARY_WORDS:  # final strict check over every field
+            raise SummaryError(f"Summary is {words} words after trimming; limit is {MAX_SUMMARY_WORDS}")
         return ClinicalSummary(
             **content.model_dump(), patient_id=patient_id, word_count=words,
             confidence=_confidence(report, words, retried), generator=summarizer.name, grounding=report,

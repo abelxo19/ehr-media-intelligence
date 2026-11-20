@@ -1,9 +1,9 @@
 {
   "pt-0056789": {
-    "chief_concern": "Chronic migraine without aura with 16 headache days per month and ibuprofen medication overuse.",
+    "chief_concern": "Chronic migraine without aura with 16 headache days per month and medication overuse with ibuprofen.",
     "key_diagnoses": [
       "Chronic migraine without aura",
-      "Medication overuse (ibuprofen)"
+      "Medication overuse with ibuprofen"
     ],
     "recent_media": [
       {
@@ -15,20 +15,20 @@
     ],
     "flagged_anomalies": [
       {
-        "finding": "Ibuprofen medication overuse; counseled to limit analgesics to fewer than 10 days per month",
+        "finding": "Medication overuse with ibuprofen; counseled to limit analgesics to fewer than 10 days per month",
         "record_id": "D-5001-B"
       }
     ],
-    "narrative": "36F with chronic migraine without aura, 16 headache days per month, ibuprofen overuse. Neuro exam and MRI brain normal. Topiramate 25 mg nightly started, titrate to 50 mg; analgesic limit counseling documented.",
+    "narrative": "36-year-old with chronic migraine without aura, 16 headache days per month. Neurological exam and MRI brain normal. Topiramate 25 mg nightly started, titrate to 50 mg.",
     "patient_id": "pt-0056789",
-    "word_count": 87,
+    "word_count": 84,
     "confidence": "high",
     "disclaimer": "AI-generated summary for information retrieval only. It may be incomplete or inaccurate, is not a clinical decision, and must be verified against the source record before any care decision.",
     "generator": "claude:claude-sonnet-5-5",
-    "prompt_version": "2026-11-v5",
+    "prompt_version": "2026-11-v7",
     "grounding": {
       "score": 1.0,
-      "checked": 6,
+      "checked": 10,
       "ungrounded": [],
       "invalid_citations": []
     },
@@ -38,12 +38,12 @@
       "D-5001-A"
     ],
     "content_hash": "628143beac0cf9dd608b7e6eaf269447d77dd592caa8d0e2bab727a0e46add90",
-    "generated_at": "2026-11-20T14:49:24+00:00"
+    "generated_at": "2026-11-20T16:26:13+00:00"
   },
   "pt-0067890": {
-    "chief_concern": "Enlarging right upper lobe lung nodule, FDG avid on PET-CT, consistent with primary lung malignancy, in a patient with COPD.",
+    "chief_concern": "Enlarging right upper lobe lung nodule, FDG avid on PET-CT 2026-02-05, findings consistent with primary lung malignancy.",
     "key_diagnoses": [
-      "Primary lung malignancy (PET-CT consistent, clinical stage at least T1c N1)",
+      "Primary lung malignancy, clinical stage at least T1c N1 (PET-CT impression)",
       "COPD GOLD 2",
       "Centrilobular emphysema"
     ],
@@ -62,35 +62,35 @@
       },
       {
         "date": "2025-10-20",
-        "type": "Low-dose screening CT",
+        "type": "Low-dose screening CT chest",
         "finding": "9 mm solid RUL nodule, Lung-RADS 4A; centrilobular emphysema",
         "record_id": "D-6001-A"
       }
     ],
     "flagged_anomalies": [
       {
-        "finding": "RUL nodule 9 mm to 13 mm with spiculation, Lung-RADS 4B, highly suspicious for malignancy",
-        "record_id": "D-6002-A"
-      },
-      {
-        "finding": "FDG avid nodule SUV max 7.2 and mildly avid right hilar node SUV 3.1",
+        "finding": "FDG avid spiculated RUL nodule, SUV max 7.2, consistent with primary lung malignancy",
         "record_id": "SCN-0ec48a8183"
       },
       {
-        "finding": "Tissue sampling recommended; no pathology in records",
+        "finding": "Mildly avid right hilar lymph node, SUV 3.1",
+        "record_id": "SCN-0ec48a8183"
+      },
+      {
+        "finding": "Interval growth 9 mm to 13 mm, Lung-RADS 4B; CT recommended PET-CT and tissue sampling, no tissue sampling result in records",
         "record_id": "D-6002-A"
       }
     ],
-    "narrative": "Nodule found on screening CT 2025-10-20 grew from 9 mm to 13 mm by 2026-01-22. PET-CT 2026-02-05 consistent with primary lung malignancy, no distant metastases. No tissue diagnosis or later notes documented.",
+    "narrative": "60-year-old male, 30 pack-year smoker with COPD. RUL nodule 9 mm (2025-10-20) grew to 13 mm (2026-01-22); PET-CT 2026-02-05 consistent with primary lung malignancy, no distant metastatic disease. Tissue sampling was recommended on CT; no result in records.",
     "patient_id": "pt-0067890",
-    "word_count": 153,
+    "word_count": 163,
     "confidence": "high",
     "disclaimer": "AI-generated summary for information retrieval only. It may be incomplete or inaccurate, is not a clinical decision, and must be verified against the source record before any care decision.",
     "generator": "claude:claude-sonnet-5-5",
-    "prompt_version": "2026-11-v5",
+    "prompt_version": "2026-11-v7",
     "grounding": {
       "score": 1.0,
-      "checked": 15,
+      "checked": 19,
       "ungrounded": [],
       "invalid_citations": []
     },
@@ -102,14 +102,20 @@
       "D-6001-A"
     ],
     "content_hash": "253e730c89c3c76f4515cb997529519fb6bb8c658a6c01444070c207de7da4c0",
-    "generated_at": "2026-11-20T14:49:29+00:00"
+    "generated_at": "2026-11-20T16:26:18+00:00"
   },
   "pt-0078901": {
-    "chief_concern": "Acute appendicitis, treated with laparoscopic appendectomy on 2026-08-09.",
+    "chief_concern": "Acute appendicitis treated with laparoscopic appendectomy on 2026-08-09; discharged postoperative day 1.",
     "key_diagnoses": [
       "Acute appendicitis"
     ],
     "recent_media": [
+      {
+        "date": "2026-08-09",
+        "type": "CT abdomen pelvis",
+        "finding": "Dilated appendix 12 mm, periappendiceal fat stranding, appendicolith; no abscess or free air; impression acute appendicitis",
+        "record_id": "D-7001-A"
+      },
       {
         "date": "2026-08-09",
         "type": "CBC",
@@ -121,12 +127,6 @@
         "type": "Serum hCG",
         "finding": "Negative",
         "record_id": "LAB-ACC-5402"
-      },
-      {
-        "date": "2026-08-09",
-        "type": "CT abdomen/pelvis with contrast",
-        "finding": "Dilated appendix 12 mm, periappendiceal fat stranding, appendicolith; no abscess or free air; impression acute appendicitis",
-        "record_id": "D-7001-A"
       }
     ],
     "flagged_anomalies": [
@@ -139,16 +139,16 @@
         "record_id": "LAB-ACC-5401"
       }
     ],
-    "narrative": "24-year-old female with CT-confirmed acute appendicitis. Underwent uncomplicated laparoscopic appendectomy; inflamed, non-perforated appendix. Discharged postoperative day 1 with return precautions; no later records available.",
+    "narrative": "CT showed acute appendicitis with WBC 16.4 10*3/uL. Laparoscopic appendectomy found inflamed, non-perforated appendix, no complications. Discharged with return precautions for fever or worsening abdominal pain.",
     "patient_id": "pt-0078901",
-    "word_count": 81,
+    "word_count": 86,
     "confidence": "high",
     "disclaimer": "AI-generated summary for information retrieval only. It may be incomplete or inaccurate, is not a clinical decision, and must be verified against the source record before any care decision.",
     "generator": "claude:claude-sonnet-5-5",
-    "prompt_version": "2026-11-v5",
+    "prompt_version": "2026-11-v7",
     "grounding": {
       "score": 1.0,
-      "checked": 11,
+      "checked": 15,
       "ungrounded": [],
       "invalid_citations": []
     },
@@ -161,37 +161,36 @@
       "LAB-ACC-5402"
     ],
     "content_hash": "ebbd0099436aeb4fbabc70aafea007b00ae113e4dcb7e92905459b36115af1dd",
-    "generated_at": "2026-11-20T14:49:33+00:00"
+    "generated_at": "2026-11-20T16:26:22+00:00"
   },
   "pt-0099012": {
-    "chief_concern": "Newly diagnosed left breast invasive ductal carcinoma, ER/PR positive, HER2 negative, clinical stage IIA (cT1c N1), awaiting treatment planning.",
+    "chief_concern": "Newly diagnosed left breast invasive ductal carcinoma, ER/PR positive, HER2 negative, clinical stage IIA (cT1c N1).",
     "key_diagnoses": [
-      "Left breast invasive ductal carcinoma, ER/PR positive, HER2 negative",
-      "Clinical stage IIA (cT1c N1)"
+      "Left breast invasive ductal carcinoma, ER/PR positive, HER2 negative, clinical stage IIA (cT1c N1)"
     ],
     "recent_media": [
       {
         "date": "2026-04-21",
-        "type": "Breast core biopsy pathology",
-        "finding": "Invasive ductal carcinoma, Nottingham grade 2; ER 95%, PR 60%, HER2 IHC 1+; Ki-67 20%",
+        "type": "Core biopsy pathology",
+        "finding": "Invasive ductal carcinoma, Nottingham grade 2; ER 95%, PR 60%, HER2 negative (IHC 1+); Ki-67 20%",
         "record_id": "D-9002-A"
       },
       {
         "date": "2026-04-21",
-        "type": "Tumor marker lab",
+        "type": "Tumor marker",
         "finding": "CA 15-3 38 U/mL (ref <30), high",
         "record_id": "LAB-ACC-5601"
       },
       {
         "date": "2026-04-14",
-        "type": "Mammogram, left",
-        "finding": "1.8 cm irregular spiculated mass with pleomorphic microcalcifications; BI-RADS 4C",
+        "type": "Mammogram",
+        "finding": "1.8 cm irregular spiculated mass at 2 o'clock with pleomorphic microcalcifications; BI-RADS 4C",
         "record_id": "D-9001-A"
       },
       {
         "date": "2026-04-14",
-        "type": "Breast ultrasound, left",
-        "finding": "1.7 x 1.4 cm hypoechoic irregular mass; borderline axillary node, cortical thickening 3.5 mm",
+        "type": "Breast ultrasound",
+        "finding": "1.7 x 1.4 cm hypoechoic irregular mass; borderline left axillary node, cortical thickening 3.5 mm",
         "record_id": "D-9001-B"
       }
     ],
@@ -205,20 +204,24 @@
         "record_id": "D-9001-B"
       },
       {
-        "finding": "Pending: breast MRI, tumor board decision (neoadjuvant endocrine therapy vs upfront surgery), genetic counseling referral; mother with breast cancer at 48",
+        "finding": "Plan pending: breast MRI, then neoadjuvant endocrine therapy versus upfront surgery per tumor board",
+        "record_id": "SCN-4fd739920b"
+      },
+      {
+        "finding": "Genetic counseling referral documented (mother with breast cancer at 48)",
         "record_id": "SCN-4fd739920b"
       }
     ],
-    "narrative": "49F with biopsy-proven left breast IDC, grade 2, ER/PR positive, HER2 negative, staged cT1c N1. Imaging showed BI-RADS 4C mass and borderline axillary node; CA 15-3 high. Oncology plan: MRI, then tumor board decision on neoadjuvant endocrine therapy versus upfront surgery.",
+    "narrative": "49-year-old with biopsy-proven left breast invasive ductal carcinoma, ER/PR positive, HER2 negative. Imaging showed BI-RADS 4C mass and borderline axillary node; CA 15-3 38 U/mL (high). Documented plan: breast MRI, tumor board decision, genetic counseling.",
     "patient_id": "pt-0099012",
-    "word_count": 173,
+    "word_count": 168,
     "confidence": "high",
     "disclaimer": "AI-generated summary for information retrieval only. It may be incomplete or inaccurate, is not a clinical decision, and must be verified against the source record before any care decision.",
     "generator": "claude:claude-sonnet-5-5",
-    "prompt_version": "2026-11-v5",
+    "prompt_version": "2026-11-v7",
     "grounding": {
       "score": 1.0,
-      "checked": 16,
+      "checked": 21,
       "ungrounded": [],
       "invalid_citations": []
     },
@@ -231,15 +234,13 @@
       "D-9001-B"
     ],
     "content_hash": "e7f9b3e879fc4c2ea072e6549d4d479dd10c58b209b7cb55f84f18d9514969f7",
-    "generated_at": "2026-11-20T14:49:42+00:00"
+    "generated_at": "2026-11-20T16:26:31+00:00"
   },
   "pt-0023456": {
-    "chief_concern": "Follow-up after NSTEMI with LAD stent, on cardiac rehabilitation and secondary prevention.",
+    "chief_concern": "Follow-up one month after NSTEMI with LAD stent, with LDL still above goal on atorvastatin 80 mg.",
     "key_diagnoses": [
       "NSTEMI",
-      "90% stenosis of proximal LAD, status post drug-eluting stent",
-      "Reduced LVEF 45% with anterior wall and apex hypokinesis",
-      "Mild mitral regurgitation"
+      "90% stenosis of proximal left anterior descending artery, status post drug-eluting stent"
     ],
     "recent_media": [
       {
@@ -257,13 +258,13 @@
       {
         "date": "2026-05-19",
         "type": "Lipid panel",
-        "finding": "LDL 168 mg/dL (ref <100) high; HDL 34 mg/dL (ref >40) low",
+        "finding": "LDL 168 mg/dL (high), HDL 34 mg/dL (low)",
         "record_id": "LAB-ACC-5103"
       },
       {
         "date": "2026-05-18",
         "type": "Cardiac markers",
-        "finding": "Troponin I hs 240 ng/L (ref <20), critical high",
+        "finding": "Troponin I high sensitivity 240 ng/L (critical high)",
         "record_id": "LAB-ACC-5102"
       }
     ],
@@ -273,7 +274,7 @@
         "record_id": "SCN-a30d4d167b"
       },
       {
-        "finding": "Repeat echo planned in 3 months; no result in records",
+        "finding": "Repeat echo planned in 3 months from 2026-06-20; no repeat echo in records",
         "record_id": "SCN-a30d4d167b"
       },
       {
@@ -281,21 +282,17 @@
         "record_id": "D-2001-C"
       },
       {
-        "finding": "Troponin I hs 240 ng/L critical high (initial 88 ng/L)",
+        "finding": "Troponin I 240 ng/L (critical high), up from 88 ng/L",
         "record_id": "LAB-ACC-5102"
-      },
-      {
-        "finding": "Dual antiplatelet therapy recommended for 12 months",
-        "record_id": "D-2001-B"
       }
     ],
-    "narrative": "54M, NSTEMI 2026-05-18 with 90% proximal LAD stenosis, stented. At 2026-06-20 visit no angina, on aspirin and ticagrelor, in cardiac rehab. LDL 112 on atorvastatin 80 mg, ezetimibe being added; repeat echo due in 3 months, no result on file.",
+    "narrative": "NSTEMI on 2026-05-18 with 90% proximal LAD stenosis treated with drug-eluting stent. LVEF 45%. Cardiology 2026-06-20: no angina, on aspirin and ticagrelor, in cardiac rehabilitation; LDL 112 with ezetimibe added.",
     "patient_id": "pt-0023456",
-    "word_count": 178,
+    "word_count": 155,
     "confidence": "high",
     "disclaimer": "AI-generated summary for information retrieval only. It may be incomplete or inaccurate, is not a clinical decision, and must be verified against the source record before any care decision.",
     "generator": "claude:claude-sonnet-5-5",
-    "prompt_version": "2026-11-v5",
+    "prompt_version": "2026-11-v7",
     "grounding": {
       "score": 1.0,
       "checked": 22,
@@ -313,10 +310,10 @@
       "LAB-ACC-5102"
     ],
     "content_hash": "04c3c91da410eeb9a0cb956137466b495c6d895d764d4dac626fec3bff2162fa",
-    "generated_at": "2026-11-20T14:49:11+00:00"
+    "generated_at": "2026-11-20T16:24:20+00:00"
   },
   "pt-0123345": {
-    "chief_concern": "Right non-displaced scaphoid waist fracture after fall onto outstretched hand while snowboarding, managed in thumb spica cast.",
+    "chief_concern": "Right scaphoid waist fracture, non-displaced, after fall onto outstretched hand while snowboarding.",
     "key_diagnoses": [
       "Right scaphoid waist fracture, non-displaced"
     ],
@@ -342,28 +339,26 @@
     ],
     "flagged_anomalies": [
       {
-        "finding": "Repeat X-ray planned at 2 weeks; no follow-up imaging in records (latest record 2026-04-05, today 2026-11-20)",
-        "record_id": "SCN-40baec71fa"
-      },
-      {
-        "finding": "Ortho notes avascular necrosis risk; consider CT or MRI if healing delayed; none documented",
+        "finding": "Repeat X-ray planned in 2 weeks; no follow-up imaging in records. Consider CT or MRI if healing delayed (avascular necrosis risk)",
         "record_id": "SCN-40baec71fa"
       }
     ],
-    "narrative": "31-year-old with acute non-displaced right scaphoid waist fracture, cast 8-10 weeks. Labs normal. Documented follow-up imaging is absent despite the planned 2-week repeat X-ray, so healing status is unknown.",
+    "narrative": "Non-displaced right scaphoid waist fracture on X-ray 2026-04-05, placed in thumb spica cast for 8-10 weeks. Orthopedics documented repeat X-ray in 2 weeks, with CT or MRI if healing is delayed. Creatinine 1 mg/dL and 25-hydroxyvitamin D 41 ng/mL listed with reference ranges.",
     "patient_id": "pt-0123345",
     "word_count": 110,
-    "confidence": "high",
+    "confidence": "medium",
     "disclaimer": "AI-generated summary for information retrieval only. It may be incomplete or inaccurate, is not a clinical decision, and must be verified against the source record before any care decision.",
     "generator": "claude:claude-sonnet-5-5",
-    "prompt_version": "2026-11-v5",
+    "prompt_version": "2026-11-v7",
     "grounding": {
-      "score": 1.0,
-      "checked": 11,
-      "ungrounded": [],
+      "score": 0.923,
+      "checked": 13,
+      "ungrounded": [
+        "Creatinine 1 mg/dL and 25-hydroxyvitamin D 41 ng/mL listed with reference ranges."
+      ],
       "invalid_citations": []
     },
-    "retry_reason": null,
+    "retry_reason": "these items are not supported by the records: ['Labs that day within reference ranges.'].",
     "source_record_ids": [
       "LAB-ACC-5901",
       "LAB-ACC-5902",
@@ -371,58 +366,62 @@
       "SCN-bd08bf81c0"
     ],
     "content_hash": "61fbe17c74f32a2cc1bd887ba2a5f9aff6368a3676a0fdc60041ace5e404bcdb",
-    "generated_at": "2026-11-20T14:50:00+00:00"
+    "generated_at": "2026-11-20T16:26:48+00:00"
   },
   "pt-0034567": {
-    "chief_concern": "Asthma follow-up after ED visit for acute exacerbation on 2026-01-07.",
+    "chief_concern": "Asthma follow-up two weeks after ED visit for acute exacerbation; symptoms controlled on ICS-formoterol.",
     "key_diagnoses": [
-      "Moderate persistent asthma",
-      "Acute asthma exacerbation after viral URI (ED 2026-01-07)"
+      "Moderate persistent asthma with acute exacerbation",
+      "Reactive airway disease"
     ],
     "recent_media": [
       {
         "date": "2026-01-21",
-        "type": "Pulmonology note with spirometry",
-        "finding": "FEV1 82% predicted, 14% bronchodilator response; symptoms controlled on ICS-formoterol",
+        "type": "Spirometry (pulmonology note)",
+        "finding": "FEV1 82% predicted with 14% bronchodilator response; blood eosinophils 8.5%",
         "record_id": "SCN-0eab222b5f"
       },
       {
         "date": "2026-01-07",
         "type": "Chest X-ray",
-        "finding": "Hyperinflated lungs; no consolidation, effusion or pneumothorax; compatible with reactive airway disease",
+        "finding": "Hyperinflated lungs; no focal consolidation, effusion or pneumothorax; compatible with reactive airway disease",
         "record_id": "D-3001-B"
       },
       {
         "date": "2026-01-07",
         "type": "CBC",
-        "finding": "WBC 11.2 10*3/uL (high), eosinophils 8.5 % (high), hemoglobin 13.4 g/dL",
+        "finding": "WBC 11.2 10*3/uL (high); eosinophils 8.5 % (high); hemoglobin 13.4 g/dL",
         "record_id": "LAB-ACC-5201"
       }
     ],
     "flagged_anomalies": [
       {
-        "finding": "Eosinophils 8.5 % (ref 0-6), high; note says consider biologic therapy if exacerbations recur",
-        "record_id": "SCN-0eab222b5f"
+        "finding": "Eosinophils 8.5 % (ref 0-6), high",
+        "record_id": "LAB-ACC-5201"
       },
       {
         "finding": "WBC 11.2 10*3/uL (ref 4.0-11.0), high",
         "record_id": "LAB-ACC-5201"
       },
       {
-        "finding": "ED SpO2 91% on room air, peak flow 45% predicted, improved to SpO2 96%",
+        "finding": "Blood eosinophils 8.5%; note documents consider biologic therapy if exacerbations recur",
+        "record_id": "SCN-0eab222b5f"
+      },
+      {
+        "finding": "ED SpO2 91% on room air, peak flow 45% predicted",
         "record_id": "D-3001-A"
       }
     ],
-    "narrative": "Moderate persistent asthma with ED exacerbation after viral URI on 2026-01-07; CXR without pneumonia. Controlled on ICS-formoterol at 2026-01-21 follow-up, FEV1 82% predicted. Eosinophils 8.5 % on both dates; biologic only if exacerbations recur.",
+    "narrative": "ED visit 2026-01-07 for asthma exacerbation after viral URI; SpO2 improved to 96% after treatment. Follow-up 2026-01-21 documents controlled symptoms on ICS-formoterol, FEV1 82% predicted. Plan documented: consider biologic therapy if exacerbations recur.",
     "patient_id": "pt-0034567",
     "word_count": 132,
     "confidence": "high",
     "disclaimer": "AI-generated summary for information retrieval only. It may be incomplete or inaccurate, is not a clinical decision, and must be verified against the source record before any care decision.",
     "generator": "claude:claude-sonnet-5-5",
-    "prompt_version": "2026-11-v5",
+    "prompt_version": "2026-11-v7",
     "grounding": {
       "score": 1.0,
-      "checked": 14,
+      "checked": 20,
       "ungrounded": [],
       "invalid_citations": []
     },
@@ -434,13 +433,13 @@
       "LAB-ACC-5201"
     ],
     "content_hash": "0e25ef06f477725a20747f39fcaa22a4ece1be058a8178512615b9612d65e23b",
-    "generated_at": "2026-11-20T14:49:15+00:00"
+    "generated_at": "2026-11-20T16:26:05+00:00"
   },
   "pt-0012345": {
-    "chief_concern": "Follow-up of diabetic kidney and eye complications after Feb 2026 admission for hyperglycemia and acute kidney injury on CKD.",
+    "chief_concern": "Follow-up of type 2 diabetes mellitus with CKD stage 3b, recent AKI, and diabetic retinopathy.",
     "key_diagnoses": [
       "Type 2 diabetes mellitus",
-      "Chronic kidney disease stage 3b",
+      "CKD stage 3b",
       "Acute kidney injury (recent)",
       "Moderate non-proliferative diabetic retinopathy, both eyes",
       "Hypertension",
@@ -468,7 +467,7 @@
       {
         "date": "2026-02-10",
         "type": "Basic metabolic panel",
-        "finding": "Glucose 412 mg/dL, creatinine 2.4 mg/dL, eGFR 27 mL/min/1.73m2 (low)",
+        "finding": "Glucose 412 mg/dL, creatinine 2.4 mg/dL, eGFR 27 mL/min/1.73m2, all flagged",
         "record_id": "LAB-ACC-5001"
       }
     ],
@@ -478,7 +477,7 @@
         "record_id": "D-1002-A"
       },
       {
-        "finding": "Repeat BMP in 1 week recommended; no repeat result in records",
+        "finding": "Nephrology plan: repeat BMP in 1 week; no result in records",
         "record_id": "D-1002-A"
       },
       {
@@ -486,28 +485,28 @@
         "record_id": "D-1002-A"
       },
       {
-        "finding": "Retinal repeat exam due in 6 months (from 2026-05-04)",
-        "record_id": "SCN-906274fb32"
+        "finding": "eGFR 27 mL/min/1.73m2 (low); creatinine 2.4 mg/dL (high)",
+        "record_id": "LAB-ACC-5001"
       },
       {
-        "finding": "A1c 10.8 % (high) and eGFR 27 mL/min/1.73m2 (low)",
+        "finding": "Hemoglobin A1c 10.8 % (high)",
         "record_id": "LAB-ACC-5002"
       }
     ],
-    "narrative": "68-year-old with long-standing type 2 diabetes, admitted Feb 2026 with glucose 412 mg/dL and AKI on CKD; creatinine improved 2.4 to 1.7 mg/dL. Nephrology suspects diabetic nephropathy; moderate NPDR found in May. Metformin discontinued; on basal-bolus insulin.",
+    "narrative": "Admitted 2026-02-10 to 2026-02-14 with glucose 412 mg/dL and AKI on CKD; creatinine improved from 2.4 to 1.7 mg/dL, metformin discontinued. Nephrology 2026-03-02 documents CKD stage 3b, suspected diabetic nephropathy. Retinal exam 2026-05-04 shows moderate non-proliferative diabetic retinopathy; repeat in 6 months.",
     "patient_id": "pt-0012345",
-    "word_count": 170,
-    "confidence": "medium",
+    "word_count": 165,
+    "confidence": "high",
     "disclaimer": "AI-generated summary for information retrieval only. It may be incomplete or inaccurate, is not a clinical decision, and must be verified against the source record before any care decision.",
     "generator": "claude:claude-sonnet-5-5",
-    "prompt_version": "2026-11-v5",
+    "prompt_version": "2026-11-v7",
     "grounding": {
       "score": 1.0,
-      "checked": 24,
+      "checked": 28,
       "ungrounded": [],
       "invalid_citations": []
     },
-    "retry_reason": "these items are not supported by the records: ['Latest eGFR 27 mL/min/1.73m2 and A1c 10.8 %; no newer values'].",
+    "retry_reason": null,
     "source_record_ids": [
       "SCN-906274fb32",
       "D-1002-A",
@@ -517,10 +516,10 @@
       "LAB-ACC-5001"
     ],
     "content_hash": "a9056605b6dfe5de316e0c3c44587f865203cb4cbe63f9e8a8c7cd3970005d0a",
-    "generated_at": "2026-11-20T14:49:05+00:00"
+    "generated_at": "2026-11-20T16:24:07+00:00"
   },
   "pt-0112234": {
-    "chief_concern": "Fatigue, weight gain and cold intolerance, evaluated for hypothyroidism, with vitamin D deficiency and osteoporosis.",
+    "chief_concern": "Fatigue, weight gain and cold intolerance, evaluated by Endocrinology on 2026-03-26.",
     "key_diagnoses": [
       "Primary hypothyroidism",
       "Hashimoto thyroiditis",
@@ -537,7 +536,7 @@
       {
         "date": "2026-03-19",
         "type": "Thyroid panel",
-        "finding": "TSH 9.8 mIU/L (high), free T4 0.7 ng/dL (low)",
+        "finding": "TSH 9.8 mIU/L (high); free T4 0.7 ng/dL (low)",
         "record_id": "LAB-ACC-5801"
       },
       {
@@ -549,36 +548,36 @@
     ],
     "flagged_anomalies": [
       {
-        "finding": "TSH 9.8 mIU/L high with free T4 0.7 ng/dL low",
-        "record_id": "LAB-ACC-5801"
-      },
-      {
-        "finding": "25-hydroxyvitamin D 14 ng/mL low",
-        "record_id": "LAB-ACC-5802"
-      },
-      {
         "finding": "Lumbar spine T-score -2.7; FRAX 10-year major osteoporotic fracture risk 18%",
         "record_id": "SCN-99e379a598"
       },
       {
-        "finding": "Plan to recheck TSH in 6 weeks; no repeat TSH in records",
+        "finding": "TSH 9.8 mIU/L (ref 0.4-4.0), high; free T4 0.7 ng/dL (ref 0.8-1.8), low",
+        "record_id": "LAB-ACC-5801"
+      },
+      {
+        "finding": "25-hydroxyvitamin D 14 ng/mL (ref 30-100), low",
+        "record_id": "LAB-ACC-5802"
+      },
+      {
+        "finding": "Plan to recheck TSH in 6 weeks; no result in records",
         "record_id": "SCN-86ad798390"
       }
     ],
-    "narrative": "Hashimoto primary hypothyroidism and vitamin D deficiency diagnosed 2026-03; levothyroxine 75 mcg daily and ergocalciferol 50,000 IU weekly x 8 weeks started. DEXA 2026-04-02 shows lumbar osteoporosis. Documented TSH recheck not in records.",
+    "narrative": "Endocrinology 2026-03-26: primary hypothyroidism (Hashimoto thyroiditis) and vitamin D deficiency; levothyroxine 75 mcg daily and ergocalciferol 50,000 IU weekly x 8 weeks started. DEXA 2026-04-02 shows osteoporosis of lumbar spine. TSH recheck planned in 6 weeks.",
     "patient_id": "pt-0112234",
-    "word_count": 139,
-    "confidence": "medium",
+    "word_count": 142,
+    "confidence": "high",
     "disclaimer": "AI-generated summary for information retrieval only. It may be incomplete or inaccurate, is not a clinical decision, and must be verified against the source record before any care decision.",
     "generator": "claude:claude-sonnet-5-5",
-    "prompt_version": "2026-11-v5",
+    "prompt_version": "2026-11-v7",
     "grounding": {
       "score": 1.0,
-      "checked": 18,
+      "checked": 22,
       "ungrounded": [],
       "invalid_citations": []
     },
-    "retry_reason": "these items are not supported by the records: ['25-hydroxyvitamin D 14 ng/mL low; no repeat level in records'].",
+    "retry_reason": null,
     "source_record_ids": [
       "SCN-99e379a598",
       "SCN-86ad798390",
@@ -586,10 +585,10 @@
       "LAB-ACC-5802"
     ],
     "content_hash": "cd45bf665ebe07051a7efbf2f094206617857380b6d500c4a6ef73b1a7ab0f3c",
-    "generated_at": "2026-11-20T14:49:56+00:00"
+    "generated_at": "2026-11-20T16:26:40+00:00"
   },
   "pt-0045678": {
-    "chief_concern": "Heart failure with reduced ejection fraction follow-up after December 2025 decompensation admission; ICD evaluation pending.",
+    "chief_concern": "Heart failure with reduced ejection fraction, followed in cardiology clinic after admission for acute decompensation 2025-12-01 to 2025-12-06.",
     "key_diagnoses": [
       "Heart failure with reduced ejection fraction",
       "Acute decompensated heart failure (admitted 2025-12)",
@@ -607,7 +606,7 @@
       {
         "date": "2026-01-15",
         "type": "Basic metabolic panel",
-        "finding": "Potassium 5.4 mmol/L (high); creatinine 1.3 mg/dL",
+        "finding": "Potassium 5.4 mmol/L (ref 3.5-5.1), high; creatinine 1.3 mg/dL (ref 0.7-1.3)",
         "record_id": "LAB-ACC-5302"
       },
       {
@@ -619,38 +618,38 @@
       {
         "date": "2025-12-01",
         "type": "Heart failure labs",
-        "finding": "NT-proBNP 6800 pg/mL (high); sodium 131 mmol/L (low)",
+        "finding": "NT-proBNP 6800 pg/mL (ref <450), high; sodium 131 mmol/L (ref 135-145), low",
         "record_id": "LAB-ACC-5301"
       }
     ],
     "flagged_anomalies": [
       {
-        "finding": "Echo LVEF 30% with severe LV systolic dysfunction; meets ICD criteria, no ICD decision documented",
+        "finding": "Echo LVEF 30%; meets criteria for primary prevention ICD",
         "record_id": "SCN-c414743a66"
       },
       {
-        "finding": "Potassium 5.4 mmol/L (high) on spironolactone; dose reduced to 12.5 mg, no repeat value in records",
+        "finding": "Potassium 5.4 mmol/L, high, on spironolactone; dose reduced to 12.5 mg",
         "record_id": "LAB-ACC-5302"
       },
       {
-        "finding": "Sodium 131 mmol/L (low); no repeat documented",
+        "finding": "Sodium 131 mmol/L, low",
         "record_id": "LAB-ACC-5301"
       },
       {
-        "finding": "Possible duplicate MRN (alternate 0045687)",
+        "finding": "Possible duplicate MRN (alternate MRN 0045687)",
         "record_id": "PATIENT"
       }
     ],
-    "narrative": "77M with HFrEF, admitted 2025-12 for decompensation (LVEF 25%), now NYHA II. Echo 2026-03-10 shows LVEF 30% on GDMT, meeting ICD criteria. Potassium follow-up after spironolactone reduction and MRN duplication need verification.",
+    "narrative": "77-year-old with HFrEF, admitted 2025-12 for decompensation with LVEF 25%. Echo 2026-03-10 shows LVEF 30%, meeting ICD criteria. Potassium 5.4 mmol/L on 2026-01-15 led to spironolactone dose reduction.",
     "patient_id": "pt-0045678",
-    "word_count": 168,
+    "word_count": 162,
     "confidence": "high",
     "disclaimer": "AI-generated summary for information retrieval only. It may be incomplete or inaccurate, is not a clinical decision, and must be verified against the source record before any care decision.",
     "generator": "claude:claude-sonnet-5-5",
-    "prompt_version": "2026-11-v5",
+    "prompt_version": "2026-11-v7",
     "grounding": {
       "score": 1.0,
-      "checked": 21,
+      "checked": 25,
       "ungrounded": [],
       "invalid_citations": []
     },
@@ -665,56 +664,56 @@
       "PATIENT"
     ],
     "content_hash": "7eef1027f93091f0eeebdb5b35d5bd91b95c43e71111c922bf82717ca3248bc4",
-    "generated_at": "2026-11-20T14:49:21+00:00"
+    "generated_at": "2026-11-20T16:26:10+00:00"
   },
   "pt-0089012": {
-    "chief_concern": "Poorly controlled hypertension (BP 168/102) with critical potassium 6.3 mmol/L and elevated creatinine 1.9 mg/dL; evaluating secondary hypertension.",
+    "chief_concern": "Poorly controlled hypertension (BP 168/102) with potassium 6.3 mmol/L (critical) and creatinine 1.9 mg/dL.",
     "key_diagnoses": [
       "Hypertension, poorly controlled",
-      "Right renal artery stenosis greater than 60% (duplex)"
+      "Right renal artery stenosis greater than 60% (duplex findings consistent)"
     ],
     "recent_media": [
       {
         "date": "2026-07-18",
         "type": "Renal artery duplex",
-        "finding": "PSV 310 cm/s right renal artery origin, renal-aortic ratio 4.1; consistent with greater than 60% right renal artery stenosis",
+        "finding": "PSV 310 cm/s at right renal artery origin, renal-aortic ratio 4.1; consistent with greater than 60% right renal artery stenosis",
         "record_id": "SCN-eb7d189579"
       },
       {
         "date": "2026-07-11",
         "type": "Basic metabolic panel",
-        "finding": "Potassium 6.3 mmol/L (critical high), creatinine 1.9 mg/dL (high), sodium 138 mmol/L",
+        "finding": "Potassium 6.3 mmol/L (critical high); creatinine 1.9 mg/dL (high); sodium 138 mmol/L",
         "record_id": "LAB-ACC-5501"
       }
     ],
     "flagged_anomalies": [
       {
-        "finding": "Potassium 6.3 mmol/L (critical high); sent to ED for repeat, no repeat result in records",
+        "finding": "Potassium 6.3 mmol/L (ref 3.5-5.1), critical high",
         "record_id": "LAB-ACC-5501"
       },
       {
-        "finding": "Creatinine 1.9 mg/dL, up from 1.2 last year",
+        "finding": "Creatinine 1.9 mg/dL (ref 0.7-1.3), high; up from 1.2 last year",
         "record_id": "SCN-ffc278b732"
       },
       {
-        "finding": "Right renal artery stenosis greater than 60% on duplex; no follow-up plan documented",
+        "finding": "Duplex consistent with greater than 60% right renal artery stenosis",
         "record_id": "SCN-eb7d189579"
       },
       {
-        "finding": "Lisinopril held and spironolactone stopped; no restart plan documented",
+        "finding": "Sent to ED for repeat potassium; no ED result in records",
         "record_id": "SCN-ffc278b732"
       }
     ],
-    "narrative": "Poorly controlled hypertension on lisinopril and spironolactone with critical potassium and raised creatinine; both drugs stopped or held on 2026-07-11. Duplex 2026-07-18 shows findings consistent with greater than 60% right renal artery stenosis. ED repeat potassium outcome not in records.",
+    "narrative": "Hypertension poorly controlled on lisinopril 40 mg and spironolactone 25 mg; spironolactone stopped, lisinopril held on 2026-07-11. Critical potassium and elevated creatinine that day; ECG without peaked T waves. Duplex 2026-07-18 consistent with greater than 60% right renal artery stenosis.",
     "patient_id": "pt-0089012",
-    "word_count": 153,
+    "word_count": 146,
     "confidence": "high",
     "disclaimer": "AI-generated summary for information retrieval only. It may be incomplete or inaccurate, is not a clinical decision, and must be verified against the source record before any care decision.",
     "generator": "claude:claude-sonnet-5-5",
-    "prompt_version": "2026-11-v5",
+    "prompt_version": "2026-11-v7",
     "grounding": {
       "score": 1.0,
-      "checked": 14,
+      "checked": 18,
       "ungrounded": [],
       "invalid_citations": []
     },
@@ -725,16 +724,15 @@
       "LAB-ACC-5501"
     ],
     "content_hash": "e8b632b06c43d99781a55e1c693248dea2d5d4fe1d9b4c2ccff1f22dad6e9984",
-    "generated_at": "2026-11-20T14:49:37+00:00"
+    "generated_at": "2026-11-20T16:26:26+00:00"
   },
   "pt-0101123": {
-    "chief_concern": "Post-op follow-up after left carotid endarterectomy (2026-09-20) for left ICA stenosis following acute left MCA ischemic stroke.",
+    "chief_concern": "Follow-up after acute left MCA ischemic stroke (09/02/2026) with left ICA stenosis 80%, status post left carotid endarterectomy on 2026-09-20.",
     "key_diagnoses": [
       "Acute left MCA ischemic stroke",
-      "Left ICA stenosis 80%",
-      "Moderate chronic small vessel ischemic disease",
+      "Left internal carotid artery stenosis 80%",
       "Expressive aphasia",
-      "Right arm weakness"
+      "Moderate chronic small vessel ischemic disease"
     ],
     "recent_media": [
       {
@@ -764,7 +762,11 @@
     ],
     "flagged_anomalies": [
       {
-        "finding": "LDL 142 mg/dL (ref <70), high; triglycerides 210 mg/dL, high",
+        "finding": "LDL 142 mg/dL (ref <70), high",
+        "record_id": "LAB-ACC-5701"
+      },
+      {
+        "finding": "Triglycerides 210 mg/dL (ref <150), high",
         "record_id": "LAB-ACC-5701"
       },
       {
@@ -772,24 +774,20 @@
         "record_id": "LAB-ACC-5702"
       },
       {
-        "finding": "Severe left ICA origin stenosis on MRA; 80% on duplex",
+        "finding": "Severe stenosis of left ICA origin on MRA",
         "record_id": "D-10001-B"
-      },
-      {
-        "finding": "Outpatient speech therapy planned; no follow-up documented since",
-        "record_id": "D-10001-C"
       }
     ],
-    "narrative": "71M with acute left MCA stroke (NIHSS 8 to 3 after IV tenecteplase) and 80% left ICA stenosis, s/p uncomplicated left carotid endarterectomy, neurologically intact post-op. Lipids and A1c were high on 2026-09-03; on aspirin, clopidogrel for 21 days and high-intensity statin per discharge.",
+    "narrative": "Acute left MCA stroke treated with IV tenecteplase; NIHSS improved from 8 to 3. Left carotid endarterectomy done 2026-09-20, uncomplicated, neurologically intact post-op. Discharge plan documented: aspirin, clopidogrel for 21 days, high-intensity statin, outpatient speech therapy.",
     "patient_id": "pt-0101123",
-    "word_count": 174,
+    "word_count": 160,
     "confidence": "high",
     "disclaimer": "AI-generated summary for information retrieval only. It may be incomplete or inaccurate, is not a clinical decision, and must be verified against the source record before any care decision.",
     "generator": "claude:claude-sonnet-5-5",
-    "prompt_version": "2026-11-v5",
+    "prompt_version": "2026-11-v7",
     "grounding": {
       "score": 1.0,
-      "checked": 21,
+      "checked": 24,
       "ungrounded": [],
       "invalid_citations": []
     },
@@ -803,6 +801,6 @@
       "D-10001-A"
     ],
     "content_hash": "186fe649e8bebb6eb2e32332bb47541402348d9d3959782f028a9a5a1a62d55c",
-    "generated_at": "2026-11-20T14:49:47+00:00"
+    "generated_at": "2026-11-20T16:26:36+00:00"
   }
 }

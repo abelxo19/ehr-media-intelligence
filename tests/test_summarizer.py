@@ -18,6 +18,8 @@ from app.summarization.summarizer import (
     SummaryError,
     SummaryService,
     check_grounding,
+    _confidence,
+    _numbers,
     count_words,
 )
 
@@ -239,7 +241,7 @@ def test_absence_clause_still_checks_numbers(bundles):
     rendered, ids = render_bundle(bundles["pt-0012345"])
     content = SummaryContent.model_validate(GOOD.model_dump() | {"recent_media": [], "flagged_anomalies": [],
                                                                  "key_diagnoses": ["eGFR 27; no value below 19"]})
-    assert check_grounding(content, rendered, ids).ungrounded == ["eGFR 27; no value below 19"]
+    assert "eGFR 27; no value below 19" in check_grounding(content, rendered, ids).ungrounded
 
 
 def test_committed_claude_summaries_pass_quality_checks(bundles):
@@ -253,7 +255,65 @@ def test_committed_claude_summaries_pass_quality_checks(bundles):
         s = ClinicalSummary.model_validate(raw)
         assert s.generator.startswith("claude:") and s.disclaimer == DISCLAIMER
         assert s.word_count <= MAX_SUMMARY_WORDS and len(s.key_diagnoses) <= 6
+        assert count_words(SummaryContent.model_validate(raw)) == s.word_count
         rendered, ids = render_bundle(bundles[pid])
-        report = check_grounding(SummaryContent.model_validate(s.model_dump()), rendered, ids)
-        assert report.score == 1.0 and not report.invalid_citations, (pid, report)
+        content = SummaryContent.model_validate(raw)
+        report = check_grounding(content, rendered, ids)
+        # The stored grounding / confidence are exactly what the current checker computes...
+        assert report == s.grounding, pid
+        assert s.confidence == _confidence(report, s.word_count, bool(s.retry_reason)), pid
+        # ...no citation is invented, and every number in every field exists in the source.
+        assert not report.invalid_citations, (pid, report)
+        fields = [content.chief_concern, content.narrative, *content.key_diagnoses]
+        fields += [m.finding for m in content.recent_media] + [a.finding for a in content.flagged_anomalies]
+        for text in fields:
+            assert _numbers(text) <= _numbers(rendered), (pid, text)
         assert "**" not in json.dumps(raw)
+
+
+def test_chief_concern_and_narrative_are_checked(bundle):
+    """Reviewer finding: invented text in chief_concern / narrative used to score 100% grounding."""
+    rendered, ids = render_bundle(bundle)
+    content = SummaryContent.model_validate(GOOD.model_dump() | {
+        "chief_concern": "Metastatic pancreatic cancer with liver failure.",
+        "narrative": "Hypertension is poorly controlled. Started chemotherapy on 2026-09-01; prognosis poor."})
+    report = check_grounding(content, rendered, ids)
+    assert "Metastatic pancreatic cancer with liver failure." in report.ungrounded
+    assert "Started chemotherapy on 2026-09-01; prognosis poor." in report.ungrounded
+    assert "Hypertension is poorly controlled." not in report.ungrounded  # true sentence still passes
+    assert report.score < 1
+
+
+def test_numbers_match_whole_tokens(bundle):
+    """Reviewer finding: '6.3' used to match inside '16.3'. Values are now compared as whole numbers."""
+    rendered, ids = render_bundle(bundle)
+    shifted = rendered.replace("6.3 mmol/L", "16.3 mmol/L")
+    claim = {"key_diagnoses": ["Potassium 6.3 mmol/L"], "recent_media": [], "flagged_anomalies": []}
+    content = SummaryContent.model_validate(GOOD.model_dump() | claim)
+    assert "Potassium 6.3 mmol/L" in check_grounding(content, shifted, ids).ungrounded
+    assert "Potassium 6.3 mmol/L" not in check_grounding(content, rendered, ids).ungrounded
+
+
+def test_word_limit_is_strict_for_every_field():
+    """Reviewer finding: a 240-word chief concern used to survive trimming (242 words)."""
+    from app.summarization.summarizer import _trim
+
+    for field in ("chief_concern", "narrative"):
+        huge = SummaryContent.model_validate(GOOD.model_dump() | {field: "word " * 400})
+        assert count_words(_trim(huge)) <= MAX_SUMMARY_WORDS
+    huge_lists = SummaryContent.model_validate(GOOD.model_dump() | {"key_diagnoses": ["x " * 150] * 6})
+    assert count_words(_trim(huge_lists)) <= MAX_SUMMARY_WORDS
+
+
+def test_service_never_returns_over_limit(bundle, store):
+    long = GOOD.model_copy(update={"chief_concern": "word " * 300})
+    summary = SummaryService(store, FakeSummarizer(long, long)).summarize(PID, bundle, "h-long")
+    assert summary.word_count <= MAX_SUMMARY_WORDS and summary.confidence != "high"
+
+
+def test_render_includes_encounter_period(bundles):
+    """Claude once wrote "admitted 2026-02-14" for Maria Gonzalez; that is her discharge-summary
+    date. Each record now carries its encounter span, so admission and discharge are explicit."""
+    rendered, _ = render_bundle(bundles["pt-0012345"])
+    header = next(line for line in rendered.splitlines() if line.startswith("[D-1001-A]"))
+    assert header.endswith("| inpatient encounter 2026-02-10 to 2026-02-14")
